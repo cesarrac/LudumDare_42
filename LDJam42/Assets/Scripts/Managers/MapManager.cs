@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -9,7 +10,7 @@ public class MapManager  {
 
     int mapWidth = 9, mapHeight = 9;
     
-    GameMap Map;
+    public GameMap Map { get; protected set; }
 
     struct TileGOData
     {
@@ -67,5 +68,10 @@ public class MapManager  {
         TileGOs = TileGOs.Where(go => go.mainGO != null).ToArray();
 
 
+    }
+
+    public bool CanMoveTo(MoveData newPositionData)
+    {
+        return !Map.BlocksPath(new Vector2(newPositionData.X, newPositionData.Y));
     }
 }

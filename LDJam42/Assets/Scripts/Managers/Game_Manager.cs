@@ -8,6 +8,9 @@ public class Game_Manager : MonoBehaviour {
 	void Start () {
         new MapManager();
         MapManager.instance.NewMap(Vector2.zero);
+        EntityActionManager.instance.Init();
+        EntityManager.instance.SpawnEntity("Player", Vector2.right, isPlayer: true);
+        EntityManager.instance.SpawnEntity("Player", Vector2.zero);
 	}
 	
 	// Update is called once per frame

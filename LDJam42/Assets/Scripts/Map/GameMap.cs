@@ -38,7 +38,7 @@ public class GameMap
             int x = i % mapWidth;
             int y = i / mapWidth;
 
-            Tiles[i] = new MapTile(TileType.Darkness, new Vector2Int(x, y), new Vector2(worldOriginPoint.x + x, worldOriginPoint.y + y));
+            Tiles[i] = new MapTile(TileType.Floor, new Vector2Int(x, y), new Vector2(worldOriginPoint.x + x, worldOriginPoint.y + y));
         }
     }
     public void SetTileType(int x, int y, TileType type)
@@ -46,6 +46,13 @@ public class GameMap
         if (IsInMapBounds(x, y) == false) return;
         Tiles[GridIndex(x, y)].tileType = type;
        // Debug.Log("tile type set to " + type);
+    }
+
+    public MapTile GetTile(Vector2 worldPos)
+    {
+        int x = Mathf.FloorToInt(worldPos.x);
+        int y = Mathf.FloorToInt(worldPos.y);
+        return GetTile(x, y);
     }
 
     public MapTile GetTile(int x, int y)
@@ -210,6 +217,8 @@ public class MapTile
     public bool seen;
     public bool discovered;
 
+    public List<Entity> entities;
+
     public Vector2Int GridPosition
     {
         get
@@ -233,6 +242,18 @@ public class MapTile
         this.seen = false;
         this.discovered = false;
         worldPosition = worldPos;
+        entities = new List<Entity>();
+    }
+
+    public void RegisterEntity(Entity entity)
+    {
+        entities.Add(entity);
+        //Debug.Log("Entity " + entity.Name + " registered to tile");
+    }
+    public void UnRegisterEntity(Entity entity)
+    {
+        entities.Remove(entity);
+        //Debug.Log("Entity " + entity.Name + " UNregistered to tile");
     }
 }
 
