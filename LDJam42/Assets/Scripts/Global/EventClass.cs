@@ -38,4 +38,8 @@ namespace Global
         public MoveData curPositionData;
         public Entity entity;
     }
+    public class OnTurnChange : Event<OnTurnChange>
+    {
+        public TurnState newTurnState;
+    }
 }

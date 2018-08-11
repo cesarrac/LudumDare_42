@@ -21,12 +21,14 @@ public class GameMap
     public MapTile[] Tiles;
 
     Vector2 worldOriginPoint;
+    Action<TileType, int> OnTileChange;
 
-    public GameMap(int mapWidth, int mapHeight, Vector2 worldOrigin)
+    public GameMap(int mapWidth, int mapHeight, Vector2 worldOrigin, Action<TileType, int> OnTileChangeCB)
     {
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         worldOriginPoint = worldOrigin;
+        OnTileChange = OnTileChangeCB;
         InitTiles();
     }
 
@@ -45,6 +47,10 @@ public class GameMap
     {
         if (IsInMapBounds(x, y) == false) return;
         Tiles[GridIndex(x, y)].tileType = type;
+        if (OnTileChange != null)
+        {
+            OnTileChange(type, GridIndex(x, y));
+        }
        // Debug.Log("tile type set to " + type);
     }
 
@@ -182,6 +188,8 @@ public class GameMap
         if (IsInMapBounds(x, y) == false)
             return true;
         if (Tiles[GridIndex(x, y)].tileType == TileType.Wall)
+            return true;
+        if (Tiles[GridIndex(x, y)].tileType == TileType.Darkness)
             return true;
         return false;
     }

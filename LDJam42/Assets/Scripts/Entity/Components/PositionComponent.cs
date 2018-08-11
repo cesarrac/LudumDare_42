@@ -38,7 +38,16 @@ public class PositionComponent : EntityComponent
         MoveData lastData = moveData;
 
         if (CanMoveTo(newMoveData) == false)
+        {
+            if (thisEntity.CanEndTurnCB != null)
+            {
+                if (thisEntity.CanEndTurnCB() == true)
+                {
+                    TurnManager.instance.FinishTurn();
+                }
+            }
             return;
+        }
         if (actionManager.DoTileAction(thisEntity, lastData, newMoveData) == false)
             return;
 

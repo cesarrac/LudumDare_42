@@ -8,7 +8,8 @@ public class Entity  {
     public EntityType entityType { get; protected set; }
     public string Name { get; protected set; }
     EntityComponent[] components;
-    public Action<Entity> InteractCB;
+    public Func<bool> CanEndTurnCB;
+    public bool isActive { get; protected set; }
 
     public Entity(string name, EntityType eType)
     {
@@ -20,6 +21,7 @@ public class Entity  {
         Name = name;
         this.components = components;
         entityType = eType;
+        isActive = true;
     }
 
     public void InitComponent(GameObject entityGO)
@@ -37,6 +39,15 @@ public class Entity  {
                 return components[i];
         }
         return null;
+    }
+    public void OnActiveChange(bool active)
+    {
+        if (active)
+        {
+            isActive = true;
+        }
+        else
+            isActive = false;
     }
 }
 

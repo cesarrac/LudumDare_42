@@ -25,6 +25,7 @@ public enum ComponentID
     Render,
     Position,
     Fighter,
-    Turn
+    Turn,
+    AI
 }
 

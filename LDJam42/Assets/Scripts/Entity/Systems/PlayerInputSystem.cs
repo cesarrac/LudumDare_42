@@ -1,19 +1,38 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using Global;
 
 public class PlayerInputSystem : MonoBehaviour
 {
     public static PlayerInputSystem instance { get; protected set; }
     Action<MoveData> OnMoveInput;
     Vector2 lastV2;
+    InputState inputState;
 
     private void Awake()
     {
         instance = this;
+
+        Global.OnTurnChange.RegisterListener(OnTurnChanged);
     }
+    private void OnTurnChanged(OnTurnChange data)
+    {
+        if (data.newTurnState == TurnState.Player)
+        {
+            inputState = InputState.Default;
+        }
+        else
+        {
+            inputState = InputState.Off;
+        }
+    }
+
     private void Update()
     {
+        if (inputState == InputState.Off)
+            return;
+
         Vector2 inputV2 = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         if (inputV2 != lastV2)
         {
@@ -31,6 +50,10 @@ public class PlayerInputSystem : MonoBehaviour
     {
         OnMoveInput += cb;
     }
+}
+public enum InputState
+{
+    Off, Default
 }
 
 public struct MoveData

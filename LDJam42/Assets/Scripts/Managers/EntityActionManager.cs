@@ -55,8 +55,20 @@ public class EntityActionManager : MonoBehaviour
         }
 
         // Normal move action happens
-        curTile.UnRegisterEntity(entity);
-        nextTile.RegisterEntity(entity);
+        if (nextTile != curTile)
+        {
+            curTile.UnRegisterEntity(entity);
+            nextTile.RegisterEntity(entity);
+        }
+
+        // check if this can end turn
+        if (entity.CanEndTurnCB != null)
+        {
+            if (entity.CanEndTurnCB() == true)
+            {
+                TurnManager.instance.FinishTurn();
+            }
+        }
         return true;
     }
 

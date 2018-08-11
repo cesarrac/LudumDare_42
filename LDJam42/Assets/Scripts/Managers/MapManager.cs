@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Global;
 using UnityEngine;
 
 public class MapManager  {
@@ -21,13 +22,18 @@ public class MapManager  {
     ObjectPool pool;
     GameObject tileHolder;
 
+    int darknessLevel;
+
     public MapManager()
     {
         instance = this;
+        Global.OnTurnChange.RegisterListener(SpreadDarkness);
     }
 
-    public void NewMap(Vector2 mapWorldOrigin, int mapWidth = 9, int mapHeight = 9)
+    
+    public void NewMap(Vector2 mapWorldOrigin, int darknessLevel = 0, int mapWidth = 9, int mapHeight = 9)
     {
+        this.darknessLevel = darknessLevel;
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
         pool = ObjectPool.instance;
@@ -39,7 +45,7 @@ public class MapManager  {
         tileHolder.transform.position = mapWorldOrigin;
 
         // Generate the map
-        Map = new GameMap(mapWidth, mapHeight, mapWorldOrigin);
+        Map = new GameMap(mapWidth, mapHeight, mapWorldOrigin, OnTileChange);
 
         // Spawn GObjs
         TileGOs = new TileGOData[Map.Tiles.Length];
@@ -63,6 +69,8 @@ public class MapManager  {
 
             // Set Sprite
             RenderSystem.instance.Render(Map.Tiles[i].tileType.ToString(), tileGOData.renderer);
+
+            TileGOs[i] = tileGOData;
         }
         // Clean up array
         TileGOs = TileGOs.Where(go => go.mainGO != null).ToArray();
@@ -70,8 +78,72 @@ public class MapManager  {
 
     }
 
+    void OnTileChange(TileType tileType, int index)
+    {
+        if (index < 0 || index >= TileGOs.Length)
+        {
+            Debug.LogError("Trying to change a tile that is not in the GO Tile array at index " + index);
+            return;
+        }
+        // Set Sprite
+        RenderSystem.instance.Render(tileType.ToString(), TileGOs[index].renderer);
+    }
+
     public bool CanMoveTo(MoveData newPositionData)
     {
         return !Map.BlocksPath(new Vector2(newPositionData.X, newPositionData.Y));
     }
+
+    private void SpreadDarkness(OnTurnChange data)
+    {
+        if (data.newTurnState != TurnState.Darkness)
+            return;
+
+        int mapwidth = Map.mapWidth;
+        int mapHeight = Map.mapHeight;
+        //for (int x = 0; x < mapwidth; x++)
+        //{
+        //    for (int y = 0; y < mapHeight; y++)
+        //    {
+        //        if(x == darknessLevel)
+        //        {
+        //            Map.SetTileType(x, y, TileType.Darkness);
+        //        }
+        //        else if (x == mapwidth - (1 + darknessLevel))
+        //        {
+        //            Map.SetTileType(x, y, TileType.Darkness);
+        //        }
+        //        if (y == darknessLevel)
+        //        {
+        //            Map.SetTileType(x, y, TileType.Darkness);
+        //        }
+        //        else if(y == mapHeight - (1 + darknessLevel))
+        //        {
+        //            Map.SetTileType(x, y, TileType.Darkness);
+        //        }
+        //    }
+        //}
+        if (darknessLevel > 0)
+        {
+            int darkCount = 0;
+            for (int x = 0; x < mapwidth; x++)
+            {
+                for (int y = 0; y < mapHeight; y++)
+                {
+                    if (darkCount >= darknessLevel)
+                        break;
+                    int randomChance = UnityEngine.Random.Range(0, 10);
+                    if (randomChance == 1)
+                    {
+                        Map.SetTileType(x, y, TileType.Darkness);
+                        darkCount++;
+                    }
+                }
+            }
+        }
+        darknessLevel++;
+
+        TurnManager.instance.FinishTurn();
+    }
+
 }
