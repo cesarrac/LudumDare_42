@@ -10,7 +10,9 @@ public enum TileType
     Empty,
     Floor,
     Wall,
-    Darkness
+    Darkness,
+    Exit,
+    SemiDark
 }
 
 public class GameMap 

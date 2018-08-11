@@ -2,11 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System;
+using Global;
 
 public class EntityManager : MonoBehaviour
 {
     public static EntityManager instance { get; protected set; }
-    Dictionary<string, Entity> EntityProtoMap;
+    Dictionary<string, EntityPrototype> EntityProtoMap;
     Dictionary<Entity, GameObject> EntityGOMap;
     Entity[] Enemies;
     Entity Player;
@@ -21,16 +22,98 @@ public class EntityManager : MonoBehaviour
         instance = this;
         Items = new List<Entity>();
         EntityGOMap = new Dictionary<Entity, GameObject>();
-        EntityProtoMap = new Dictionary<string, Entity>();
+        EntityProtoMap = new Dictionary<string, EntityPrototype>();
 
-        //Entity playerProto = new Entity("Player", EntityType.Unit,
-        //                                new EntityComponent[]
-        //                                {
-                                            
-        //                                });
+        CreatePrototypes();
 
-        EntityProtoMap.Add("Player", new Entity("Player", EntityType.Unit));
-        EntityProtoMap.Add("Enemy", new Entity("Enemy", EntityType.Unit));
+        Global.EntityDeath.RegisterListener(OnEntityDeath);
+    }
+
+    private void OnEntityDeath(EntityDeath data)
+    {
+        if (data.deadEntity.entityType != EntityType.Unit)
+        {
+            // do Items die?
+            return;
+        }
+        if (data.deadEntity.isPlayer)
+        {
+            // Player dead! Time to roll up a new character
+            return;
+        }
+
+        DeactivateEnemy(data.deadEntity);
+    }
+
+    private void DeactivateEnemy(Entity deadEntity)
+    {
+        foreach(Entity enemy in Enemies)
+        {
+            if (enemy == deadEntity)
+            {
+                enemy.OnActiveChange(false);
+                break;
+            }
+        }
+        PoolEntity(deadEntity);
+    }
+
+    private void PoolEntity(Entity entity)
+    {
+        if (EntityGOMap.ContainsKey(entity) == false)
+            return;
+        EntityGOMap[entity].name = "Entity";
+        pool.PoolObject(EntityGOMap[entity]);
+        EntityGOMap.Remove(entity);
+    }
+
+    private void CreatePrototypes()
+    {
+        EntityPrototype playerProto = new EntityPrototype("Player", EntityType.Unit,
+                                                          new ComponentBlueprint[]
+                                                          {
+                                                              new ComponentBlueprint("RenderComponent",
+                                                                                    new ComponentParam[]{
+                                                                                        new ComponentParam(FieldType.STRING, "Player")
+                                                                                    }),
+                                                              new ComponentBlueprint("PositionComponent",
+                                                                                    new ComponentParam[]{
+                                                                                        new ComponentParam(FieldType.FLOAT, "0"),
+                                                                                        new ComponentParam(FieldType.FLOAT, "0")
+                                                                                    }),
+                                                              new ComponentBlueprint("FighterComponent",
+                                                                                    new ComponentParam[]{
+                                                                                        new ComponentParam(FieldType.INT, "2"),
+                                                                                        new ComponentParam(FieldType.INT, "0"),
+                                                                                        new ComponentParam(FieldType.FLOAT, "25")
+                                                                                    })
+                                                          });
+
+        EntityProtoMap.Add("Player", playerProto);
+
+        EntityPrototype enemyProto = new EntityPrototype("Enemy", EntityType.Unit,
+                                                          new ComponentBlueprint[]
+                                                          {
+                                                              new ComponentBlueprint("RenderComponent",
+                                                                                    new ComponentParam[]{
+                                                                                        new ComponentParam(FieldType.STRING, "Player")
+                                                                                    }),
+                                                              new ComponentBlueprint("PositionComponent",
+                                                                                    new ComponentParam[]{
+                                                                                        new ComponentParam(FieldType.FLOAT, "0"),
+                                                                                        new ComponentParam(FieldType.FLOAT, "0")
+                                                                                    }),
+                                                              new ComponentBlueprint("FighterComponent",
+                                                                                    new ComponentParam[]{
+                                                                                        new ComponentParam(FieldType.INT, "1"),
+                                                                                        new ComponentParam(FieldType.INT, "0"),
+                                                                                        new ComponentParam(FieldType.FLOAT, "1")
+                                                                                    }),
+                                                              new ComponentBlueprint("EnemyComponent",
+                                                                                    new ComponentParam[]{
+                                                                                    }),
+                                                          });
+        EntityProtoMap.Add("Enemy", enemyProto);
     }
 
     public void SpawnPlayer(Vector2 position)
@@ -40,14 +123,8 @@ public class EntityManager : MonoBehaviour
             pool = ObjectPool.instance;
         }
 
-        Entity proto = EntityProtoMap["Player"];
-
-        EntityComponent[] components = new EntityComponent[]
-        {
-            new RenderComponent("Player"),
-            new PositionComponent(position.x, position.y),
-            new FighterComponent(10, 10)
-        };
+        EntityPrototype proto = EntityProtoMap["Player"];
+        EntityComponent[] components = ReadProtoComponents(proto.components);
 
         GameObject entityGO = pool.GetObjectForType("Entity", true, position);
         if (entityGO == null)
@@ -56,7 +133,7 @@ public class EntityManager : MonoBehaviour
             return;
         }
 
-        Entity newEntity = new Entity(proto.Name, proto.entityType, components);
+        Entity newEntity = new Entity(proto.Name, proto.entityType, components, isPlayer: true);
 
         newEntity.InitComponent(entityGO);
 
@@ -65,6 +142,8 @@ public class EntityManager : MonoBehaviour
         newEntity.CanEndTurnCB = CanPlayerEndTurn;
 
         PositionComponent posC = (PositionComponent)newEntity.GetEntityComponent(ComponentID.Position);
+        posC.moveData = new MoveData(position.x, position.y);
+
         // Register input callbacks
         PlayerInputSystem.instance.RegisterOnInputCB(posC.Move);
 
@@ -91,7 +170,7 @@ public class EntityManager : MonoBehaviour
             return;
         }
 
-        Entity proto = EntityProtoMap["Enemy"];
+        EntityPrototype proto = EntityProtoMap["Enemy"];
 
 
         Enemies = new Entity[positions.Length];
@@ -104,18 +183,20 @@ public class EntityManager : MonoBehaviour
                 // Make a new one?
                 return;
             }
-
-            EntityComponent[] components = new EntityComponent[]
-            {
-                new RenderComponent("Player"),
-                new PositionComponent(positions[i].x, positions[i].y),
-                new FighterComponent(10, 10),
-                new EnemyComponent()
-            };
+            EntityComponent[] components = ReadProtoComponents(proto.components);
+            //EntityComponent[] components = new EntityComponent[]
+            //{
+            //    new RenderComponent("Player"),
+            //    new PositionComponent(positions[i].x, positions[i].y),
+            //    new FighterComponent(10, 10),
+            //    new EnemyComponent()
+            //};
 
             Entity newEntity = new Entity(proto.Name, proto.entityType, components);
 
             newEntity.InitComponent(entityGO);
+            PositionComponent posC = (PositionComponent)newEntity.GetEntityComponent(ComponentID.Position);
+            posC.moveData = new MoveData(positions[i].x, positions[i].y);
 
             EntityGOMap.Add(newEntity, entityGO);
             int index = i;
@@ -144,4 +225,121 @@ public class EntityManager : MonoBehaviour
     {
         return true;
     }
+    public EntityComponent[] ReadProtoComponents(ComponentBlueprint[] protoComponents)
+    {
+        EntityComponent[] systems = new EntityComponent[protoComponents.Length];
+        for (int x = 0; x < protoComponents.Length; x++)
+        {
+            object[] curParameters;
+            //------------- EXCEPTION FOR READING ABILITIES:------------------------------------------------//
+            //if (blueprint[x].className == "AbilitySystem")
+            //{
+            //    // Filled Param [0] is class name and [1] is description, so Ability parameters are >= [2]
+            //    curParameters = new object[blueprint[x].compParams.Length - 2];
+
+            //    string className = blueprint[x].ParamsAsStrings[0].Value;
+            //    string desc = blueprint[x].ParamsAsStrings[1].Value;
+
+            //    for (int i = 0; i < blueprint[x].Parameters.Length; i++)
+            //    {
+            //        if (blueprint[x].ParamsAsStrings[i + 2].FieldType == FieldType.STRING)
+            //        {
+            //            blueprint[x].Parameters[i] = blueprint[x].ParamsAsStrings[i + 2].Value;
+            //        }
+            //        else if (blueprint[x].ParamsAsStrings[i + 2].FieldType == FieldType.INT)
+            //        {
+            //            int param = 0;
+            //            if (Int32.TryParse(blueprint[x].ParamsAsStrings[i + 2].Value, out param) == false)
+            //                continue;
+            //            blueprint[x].Parameters[i] = param;
+            //        }
+            //        else if (blueprint[x].ParamsAsStrings[i + 2].FieldType == FieldType.FLOAT)
+            //        {
+            //            float param = 0;
+            //            if (float.TryParse(blueprint[x].ParamsAsStrings[i + 2].Value, out param) == false)
+            //                continue;
+            //            blueprint[x].Parameters[i] = param;
+            //        }
+
+            //    }
+
+            //    systems[x] = new AbilitySystem(className, ReadAbility(className, blueprint[x].Parameters), desc);
+            //    continue;
+            //}   
+            // --------------------------------------------------------------------------------------------------
+
+            // make params an array of object
+            curParameters = new object[protoComponents[x].compParams.Length];
+
+            // Loop through parameters and try filling them
+            for (int i = 0; i < protoComponents[x].compParams.Length; i++)
+            {
+                if (protoComponents[x].compParams[i].fieldType == FieldType.STRING)
+                {
+                    curParameters[i] = protoComponents[x].compParams[i].value;
+                }
+                else if (protoComponents[x].compParams[i].fieldType == FieldType.INT)
+                {
+                    int param = 0;
+                    if (Int32.TryParse(protoComponents[x].compParams[i].value, out param) == false)
+                        continue;
+                    curParameters[i] = param;
+                }
+                else if (protoComponents[x].compParams[i].fieldType == FieldType.FLOAT)
+                {
+                    float param = 0;
+                    if (float.TryParse(protoComponents[x].compParams[i].value, out param) == false)
+                        continue;
+                    curParameters[i] = param;
+                }
+            }
+            var type = Type.GetType(protoComponents[x].className);
+            object o = Activator.CreateInstance(type, curParameters);
+
+
+            systems[x] = (EntityComponent)o;
+        }
+        return systems;
+    }
+}
+
+
+public struct EntityPrototype
+{
+    public ComponentBlueprint[] components;
+    public string Name;
+    public EntityType entityType;
+
+    public EntityPrototype(string name, EntityType entityType, ComponentBlueprint[] components)
+    {
+        this.components = components;
+        Name = name;
+        this.entityType = entityType;
+    }
+}
+public struct ComponentBlueprint
+{
+    public string className;
+    public ComponentParam[] compParams;
+
+    public ComponentBlueprint(string className, ComponentParam[] compParams)
+    {
+        this.className = className;
+        this.compParams = compParams;
+    }
+}
+public struct ComponentParam
+{
+    public FieldType fieldType;
+    public string value;
+
+    public ComponentParam(FieldType fieldType, string value)
+    {
+        this.fieldType = fieldType;
+        this.value = value;
+    }
+}
+public enum FieldType
+{
+    STRING, INT, FLOAT
 }

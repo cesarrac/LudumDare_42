@@ -10,18 +10,28 @@ public class Entity  {
     EntityComponent[] components;
     public Func<bool> CanEndTurnCB;
     public bool isActive { get; protected set; }
+    public bool isPlayer { get; protected set; }
+    public Action OnDeactivate;
+    public Faction faction { get; protected set; }
 
     public Entity(string name, EntityType eType)
     {
         Name = name;
         entityType = eType;
     }
-    public Entity(string name, EntityType eType, EntityComponent[] components)
+    public Entity(string name, EntityType eType, EntityComponent[] components, bool isPlayer = false)
     {
         Name = name;
         this.components = components;
         entityType = eType;
         isActive = true;
+        this.isPlayer = isPlayer;
+        if (isPlayer == true)
+        {
+            faction = Faction.Player;
+        }
+        else
+            faction = Faction.Monster;
     }
 
     public void InitComponent(GameObject entityGO)
@@ -47,7 +57,13 @@ public class Entity  {
             isActive = true;
         }
         else
+        {
             isActive = false;
+            if (OnDeactivate != null)
+            {
+                OnDeactivate();
+            }
+        }
     }
 }
 
@@ -56,4 +72,9 @@ public enum EntityType
 {
     Unit,
     Item
+}
+public enum Faction
+{
+    Player,
+    Monster
 }

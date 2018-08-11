@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using Global;
 using UnityEngine;
 
 public class TurnManager  {
@@ -11,19 +13,28 @@ public class TurnManager  {
     public TurnManager(TurnState startTurnState)
     {
         instance = this;
-        this.turnState = startTurnState;
+        turnState = startTurnState;
         OnTurnChange = new Global.OnTurnChange();
         OnTurnChange.newTurnState = turnState;
         OnTurnChange.FireEvent();
+        Debug.Log("Starting turn: " + turnState);
+        Global.PlayerReachedExit.RegisterListener(OnPlayerExit);
     }
-    
+
+    private void OnPlayerExit(PlayerReachedExit data)
+    {
+        Debug.Log("You have reached the EXIT!");
+        turnState = TurnState.NULL;
+        OnTurnChange.newTurnState = turnState;
+        OnTurnChange.FireEvent();
+    }
 
     public void FinishTurn()
     {
         int curState = (int)turnState;
         if (curState + 1 >= System.Enum.GetValues(typeof(TurnState)).Length)
         {
-            turnState = 0;
+            turnState = (TurnState)1;
             Debug.Log("Starting turn: " + turnState);
             OnTurnChange.newTurnState = turnState;
             OnTurnChange.FireEvent();
@@ -38,6 +49,7 @@ public class TurnManager  {
 
 public enum TurnState
 {
+    NULL,
     Player,
     Enemies,
     Darkness

@@ -24,9 +24,19 @@ public class AiStateSystem : MonoBehaviour
             Debug.Log("AiState calls DoNextState");
             DoNextState();
         }
+        else
+        {
+            // no enemies left, end enemy turn
+            TurnManager.instance.FinishTurn();
+        }
     }
     public void RegisterAi(Action cb)
     {
         DoNextState += cb;
+    }
+    public void UnRegisterAi(Action cb)
+    {
+        DoNextState -= cb;
+        Debug.Log("Ai unregistered");
     }
 }

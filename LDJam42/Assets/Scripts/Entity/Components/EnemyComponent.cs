@@ -17,6 +17,7 @@ public class EnemyComponent : EntityComponent
         position = (PositionComponent)thisEntity.GetEntityComponent(ComponentID.Position);
         AiStateSystem.instance.RegisterAi(DoNextAction);
         actionManager = EntityActionManager.instance;
+        thisEntity.OnDeactivate = () => AiStateSystem.instance.UnRegisterAi(DoNextAction);
     }
     void DoNextAction()
     {

@@ -32,8 +32,29 @@ public class PlayerInputSystem : MonoBehaviour
     {
         if (inputState == InputState.Off)
             return;
+        Vector2 inputV2 = Vector2.zero;
+        if (Input.GetButtonDown("DiagTopLeft"))
+        {
+            inputV2 = Vector2.up + Vector2.left;
+        }
+        else if (Input.GetButtonDown("DiagTopRight"))
+        {
+            inputV2 = Vector2.up + Vector2.right;
+        }
+        else if (Input.GetButtonDown("DiagBottomRight"))
+        {
+            inputV2 = Vector2.down + Vector2.right;
+        }
+        else if (Input.GetButtonDown("DiagBottomLeft"))
+        {
+            inputV2 = Vector2.down + Vector2.left;
+        }
+        else
+        {
+            inputV2 = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        }
+        
 
-        Vector2 inputV2 = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
         if (inputV2 != lastV2)
         {
             lastV2 = inputV2;

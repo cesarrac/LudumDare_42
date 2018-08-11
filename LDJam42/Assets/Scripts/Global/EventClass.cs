@@ -42,4 +42,13 @@ namespace Global
     {
         public TurnState newTurnState;
     }
+    public class PlayerReachedExit : Event<PlayerReachedExit>
+    {
+        public Vector2 exitPosition;
+    }
+    public class EntityDeath : Event<EntityDeath>
+    {
+        public Entity deadEntity;
+
+    }
 }

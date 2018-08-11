@@ -59,6 +59,13 @@ public class EntityActionManager : MonoBehaviour
         {
             curTile.UnRegisterEntity(entity);
             nextTile.RegisterEntity(entity);
+            if (entity.isPlayer == true && nextTile.tileType == TileType.Exit)
+            {
+                Global.PlayerReachedExit playerReachedExit = new Global.PlayerReachedExit();
+                playerReachedExit.exitPosition = nextTile.WorldPosition;
+                playerReachedExit.FireEvent();
+                return true;
+            }
         }
 
         // check if this can end turn
@@ -87,13 +94,15 @@ public class EntityActionManager : MonoBehaviour
         }
         if (nextTile.entities[0].entityType == EntityType.Unit)
         {
+            if (nextTile.entities[0].faction == interactor.faction)
+                return false;
             FighterComponent attacker = (FighterComponent)interactor.GetEntityComponent(ComponentID.Fighter);
             FighterComponent defender = (FighterComponent)nextTile.entities[0].GetEntityComponent(ComponentID.Fighter);
             return DoCombat(attacker, defender);
         }
         else
         {
-
+            // do item pick up
         }
 
         return true;
@@ -111,6 +120,7 @@ public class EntityActionManager : MonoBehaviour
     {
         Debug.Log("Attacker attacks with power " + attacker.GetAttackPower());
         Debug.Log("Defender defends with power " + defender.GetDefensePower());
-        return false;
+
+        return defender.ReceiveDamage(attacker.GetAttackPower());
     }
 }

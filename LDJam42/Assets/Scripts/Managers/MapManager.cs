@@ -23,6 +23,21 @@ public class MapManager  {
     GameObject tileHolder;
 
     int darknessLevel;
+    struct Darkness
+    {
+        public int x;
+        public int y;
+        public float darkValue;
+
+        public Darkness(int x, int y, float darkValue)
+        {
+            this.x = x;
+            this.y = y;
+            this.darkValue = darkValue;
+        }
+    }
+    Darkness[] darknessMap;
+
 
     public MapManager()
     {
@@ -47,8 +62,12 @@ public class MapManager  {
         // Generate the map
         Map = new GameMap(mapWidth, mapHeight, mapWorldOrigin, OnTileChange);
 
+        // Make darness map
+        darknessMap = new Darkness[mapWidth * mapHeight];
         // Spawn GObjs
         TileGOs = new TileGOData[Map.Tiles.Length];
+
+        Vector2Int exitTilePos = Vector2Int.zero;
             
         for (int i = 0; i < Map.Tiles.Length; i++)
         {
@@ -70,11 +89,27 @@ public class MapManager  {
             // Set Sprite
             RenderSystem.instance.Render(Map.Tiles[i].tileType.ToString(), tileGOData.renderer);
 
+            darknessMap[i] = new Darkness(Map.Tiles[i].GridPosition.x, Map.Tiles[i].GridPosition.y, 0);
+            // Set exit
+            //if (exitTilePos == Vector2Int.zero)
+            //{
+            //    if (UnityEngine.Random.Range(1, 4) == 1)
+            //    {
+            //        exitTilePos = Map.Tiles[i].GridPosition;
+            //    }
+            //}
+
             TileGOs[i] = tileGOData;
         }
         // Clean up array
         TileGOs = TileGOs.Where(go => go.mainGO != null).ToArray();
 
+        // if we still have no exit tile, place it in the center of the room
+        if (exitTilePos == Vector2Int.zero)
+        {
+            exitTilePos = new Vector2Int(mapWidth/2, mapHeight/2);
+        }
+        Map.SetTileType(exitTilePos.x, exitTilePos.y, TileType.Exit);
 
     }
 
@@ -132,10 +167,26 @@ public class MapManager  {
                 {
                     if (darkCount >= darknessLevel)
                         break;
+                    if (darknessMap[x + y * mapWidth].darkValue >= 1)
+                        continue;
+
                     int randomChance = UnityEngine.Random.Range(0, 10);
                     if (randomChance == 1)
                     {
-                        Map.SetTileType(x, y, TileType.Darkness);
+                        if (Map.Tiles[x + y * mapWidth].tileType == TileType.Exit)
+                            continue;
+                        // Increase darkness
+                        darknessMap[x + y * mapWidth].darkValue += 0.5f;
+
+                        // set darkness if value is at 1 + 
+                        if (darknessMap[x + y * mapWidth].darkValue >= 1)
+                        {
+                            Map.SetTileType(x, y, TileType.Darkness);
+                        }
+                        else
+                        {
+                            Map.SetTileType(x, y, TileType.SemiDark);
+                        }
                         darkCount++;
                     }
                 }
