@@ -26,6 +26,8 @@ public enum ComponentID
     Position,
     Fighter,
     Turn,
-    AI
+    AI,
+    Item,
+    Abilities
 }
 

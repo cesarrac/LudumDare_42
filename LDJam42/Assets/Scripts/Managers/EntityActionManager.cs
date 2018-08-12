@@ -6,7 +6,7 @@ public class EntityActionManager : MonoBehaviour
 {
     public static EntityActionManager instance { get; protected set; }
     MapManager mapManager;
-
+    CameraShaker cameraShaker;
     private void Awake()
     {
         instance = this;
@@ -14,6 +14,7 @@ public class EntityActionManager : MonoBehaviour
     public void Init()
     {
         mapManager = MapManager.instance;
+        cameraShaker = CameraShaker.instance;
     }
     public void InitEntityOnTile(Entity entity, MoveData curPositionData)
     {
@@ -51,7 +52,18 @@ public class EntityActionManager : MonoBehaviour
         if (nextTile.entities.Count > 0)
         {
             if (InteractTileEntities(entity, nextTile) == false)
-                return false; 
+            {
+                // check if this can end turn
+                //if (entity.CanEndTurnCB != null)
+                //{
+                //    if (entity.CanEndTurnCB() == true)
+                //    {
+                //        TurnManager.instance.FinishTurn();
+                //    }
+                //}
+
+                return false;
+            }
         }
 
         // Normal move action happens
@@ -64,18 +76,18 @@ public class EntityActionManager : MonoBehaviour
                 Global.PlayerReachedExit playerReachedExit = new Global.PlayerReachedExit();
                 playerReachedExit.exitPosition = nextTile.WorldPosition;
                 playerReachedExit.FireEvent();
-                return true;
+                return false;
             }
         }
 
         // check if this can end turn
-        if (entity.CanEndTurnCB != null)
-        {
-            if (entity.CanEndTurnCB() == true)
-            {
-                TurnManager.instance.FinishTurn();
-            }
-        }
+        //if (entity.CanEndTurnCB != null)
+        //{
+        //    if (entity.CanEndTurnCB() == true)
+        //    {
+        //        TurnManager.instance.FinishTurn();
+        //    }
+        //}
         return true;
     }
 
@@ -120,6 +132,11 @@ public class EntityActionManager : MonoBehaviour
     {
         Debug.Log("Attacker attacks with power " + attacker.GetAttackPower());
         Debug.Log("Defender defends with power " + defender.GetDefensePower());
+
+        if (defender.thisEntity.isPlayer == true)
+        {
+            cameraShaker.AddTrauma(5.2f, 2.8f);
+        }
 
         return defender.ReceiveDamage(attacker.GetAttackPower());
     }

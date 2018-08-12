@@ -22,8 +22,11 @@ public class EnemyComponent : EntityComponent
     void DoNextAction()
     {
         //Debug.Log(thisEntity.Name + " does action");
-        position.Move(new MoveData(1, 0));
-        //actionManager.DoTileAction(thisEntity, position.moveData, new MoveData(position.moveData.X + 1, position.moveData.Y));
+
+        // Figure out the direction this enemy needs to move to
+        MoveData playerPosData = EntityManager.instance.GetPlayerPositionData();
+        MoveData direction = AiStateSystem.instance.GetDirectionToTarget(position.moveData, playerPosData);
+        position.Move(direction);
     }
 
     public override void RegisterCBListener<T>(T listener)

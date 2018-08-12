@@ -33,6 +33,10 @@ public class GameMap
         OnTileChange = OnTileChangeCB;
         InitTiles();
     }
+    public void ResetMap()
+    {
+        InitTiles();
+    }
 
     private void InitTiles()
     {

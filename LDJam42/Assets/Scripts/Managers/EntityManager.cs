@@ -28,6 +28,29 @@ public class EntityManager : MonoBehaviour
 
         Global.EntityDeath.RegisterListener(OnEntityDeath);
     }
+    public void StopPlayer()
+    {
+        Player.OnActiveChange(false);
+    }
+    public void ClearItems()
+    {
+        for (int i = 0; i < Items.Count; i++)
+        {
+            PoolEntity(Items[i]);
+            Items[i].OnActiveChange(false);
+        }
+        Items.Clear();
+    }
+
+    public void ClearEnemies()
+    {
+        for (int i = 0; i < Enemies.Length; i++)
+        {
+            PoolEntity(Enemies[i]);
+            Enemies[i].OnActiveChange(false);
+        }
+        Enemies = null;
+    }
 
     private void OnEntityDeath(EntityDeath data)
     {
@@ -39,6 +62,12 @@ public class EntityManager : MonoBehaviour
         if (data.deadEntity.isPlayer)
         {
             // Player dead! Time to roll up a new character
+            Global.PlayerDeath playerDeath = new PlayerDeath();
+            playerDeath.playerName = data.deadEntity.Name;
+            playerDeath.points = 100; // TODO get this from total artifacts collected
+            playerDeath.playerEntity = data.deadEntity;
+            playerDeath.FireEvent();
+            PoolEntity(data.deadEntity);
             return;
         }
 
@@ -86,7 +115,9 @@ public class EntityManager : MonoBehaviour
                                                                                         new ComponentParam(FieldType.INT, "2"),
                                                                                         new ComponentParam(FieldType.INT, "0"),
                                                                                         new ComponentParam(FieldType.FLOAT, "25")
-                                                                                    })
+                                                                                    }),
+                                                              new ComponentBlueprint("AbilityComponent",
+                                                                                    new ComponentParam[]{})
                                                           });
 
         EntityProtoMap.Add("Player", playerProto);
@@ -96,7 +127,7 @@ public class EntityManager : MonoBehaviour
                                                           {
                                                               new ComponentBlueprint("RenderComponent",
                                                                                     new ComponentParam[]{
-                                                                                        new ComponentParam(FieldType.STRING, "Player")
+                                                                                        new ComponentParam(FieldType.STRING, "Enemy")
                                                                                     }),
                                                               new ComponentBlueprint("PositionComponent",
                                                                                     new ComponentParam[]{
@@ -123,6 +154,15 @@ public class EntityManager : MonoBehaviour
             pool = ObjectPool.instance;
         }
 
+        if (Player != null)
+        {
+            PositionComponent posComp = (PositionComponent)Player.GetEntityComponent(ComponentID.Position);
+            posComp.moveData = new MoveData(position.x, position.y);
+            EntityGOMap[Player].transform.position = position;
+            EntityActionManager.instance.InitEntityOnTile(Player, posComp.moveData);
+            return;
+        }
+
         EntityPrototype proto = EntityProtoMap["Player"];
         EntityComponent[] components = ReadProtoComponents(proto.components);
 
@@ -135,17 +175,20 @@ public class EntityManager : MonoBehaviour
 
         Entity newEntity = new Entity(proto.Name, proto.entityType, components, isPlayer: true);
 
+
         newEntity.InitComponent(entityGO);
 
         EntityGOMap.Add(newEntity, entityGO);
 
         newEntity.CanEndTurnCB = CanPlayerEndTurn;
 
+        AbilityComponent abilityComponent = (AbilityComponent)newEntity.GetEntityComponent(ComponentID.Abilities);
+        abilityComponent.AddAbility(AbilityID.Blood_For_Light, true, "Remove Darkness for 25% HP");
         PositionComponent posC = (PositionComponent)newEntity.GetEntityComponent(ComponentID.Position);
         posC.moveData = new MoveData(position.x, position.y);
 
         // Register input callbacks
-        PlayerInputSystem.instance.RegisterOnInputCB(posC.Move);
+        PlayerInputSystem.instance.RegisterOnMoveInputCB(posC.Move);
 
         GetPlayerPositionData += posC.GetPositionData;
 
@@ -184,14 +227,6 @@ public class EntityManager : MonoBehaviour
                 return;
             }
             EntityComponent[] components = ReadProtoComponents(proto.components);
-            //EntityComponent[] components = new EntityComponent[]
-            //{
-            //    new RenderComponent("Player"),
-            //    new PositionComponent(positions[i].x, positions[i].y),
-            //    new FighterComponent(10, 10),
-            //    new EnemyComponent()
-            //};
-
             Entity newEntity = new Entity(proto.Name, proto.entityType, components);
 
             newEntity.InitComponent(entityGO);

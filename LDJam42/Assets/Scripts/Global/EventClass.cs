@@ -51,4 +51,23 @@ namespace Global
         public Entity deadEntity;
 
     }
+    public class PlayerDeath : Event<PlayerDeath>
+    {
+        public string playerName;
+        public int points;
+        public Entity playerEntity;
+    }
+    public class GameWin : Event<GameWin>
+    {
+
+    }
+    public class OnMapCreated : Event<OnMapCreated>
+    {
+        public Vector2 entranceWorldPosition;
+        public Vector2 exitWorldPosition;
+    }
+    public class OnMapCleared : Event<OnMapCleared>
+    {
+
+    }
 }

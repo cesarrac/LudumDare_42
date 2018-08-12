@@ -2,18 +2,21 @@
 using System.Collections;
 using System;
 using Global;
+using System.Collections.Generic;
 
 public class PlayerInputSystem : MonoBehaviour
 {
     public static PlayerInputSystem instance { get; protected set; }
     Action<MoveData> OnMoveInput;
+    Action<KeyCode> OnKeyInput;
     Vector2 lastV2;
     InputState inputState;
+    List<DynamicKeyAction> dynamicKeyActions;
 
     private void Awake()
     {
         instance = this;
-
+        dynamicKeyActions = new List<DynamicKeyAction>();
         Global.OnTurnChange.RegisterListener(OnTurnChanged);
     }
     private void OnTurnChanged(OnTurnChange data)
@@ -65,12 +68,40 @@ public class PlayerInputSystem : MonoBehaviour
                 OnMoveInput(new MoveData(inputV2.x, inputV2.y));
             }
         }
+
+        if (dynamicKeyActions.Count > 0)
+        {
+            for (int i = 0; i < dynamicKeyActions.Count; i++)
+            {
+                if (Input.GetKeyDown(dynamicKeyActions[i].dynamicKey))
+                {
+                    dynamicKeyActions[i].action();
+                }
+            }
+        }
     }
 
-    public void RegisterOnInputCB(Action<MoveData> cb)
+    public void RegisterOnMoveInputCB(Action<MoveData> cb)
     {
         OnMoveInput += cb;
     }
+    public void UnRegisterOnMoveInputCB(Action<MoveData> cb)
+    {
+        OnMoveInput += cb;
+    }
+    public void AddDynamicKeys(Action action, string key)
+    {
+        
+        dynamicKeyActions.Add(new DynamicKeyAction(action, key));
+    }
+    //public void RegisterKeyInputCB(Action<KeyCode> cb)
+    //{
+    //    OnKeyInput += cb;
+    //}
+    //public void UnRegisterKeyInputCB(Action<KeyCode> cb)
+    //{
+    //    OnKeyInput -= cb;
+    //}
 }
 public enum InputState
 {
@@ -102,5 +133,17 @@ public struct MoveData
         {
             return y;
         }
+    }
+}
+
+public class DynamicKeyAction
+{
+    public Action action;
+    public string dynamicKey;
+
+    public DynamicKeyAction(Action action, string dynamicKey)
+    {
+        this.action = action;
+        this.dynamicKey = dynamicKey;
     }
 }

@@ -5,7 +5,7 @@ using UnityEngine;
 public class FighterComponent : EntityComponent
 {
     AttackData attackData;
-    Entity thisEntity;
+    public Entity thisEntity { get; protected set; }
     float startHP;
     public float curHP;
 
@@ -30,7 +30,7 @@ public class FighterComponent : EntityComponent
         // todo add equipment call backs to add to defense power (armor)
         return attackData.DefensePower;
     }
-    public bool ReceiveDamage(int damage)
+    public bool ReceiveDamage(float damage)
     {
         // todo add damage received call back to resist/mitigate any damage
         curHP -= damage;

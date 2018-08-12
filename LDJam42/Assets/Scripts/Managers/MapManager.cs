@@ -21,6 +21,7 @@ public class MapManager  {
     TileGOData[] TileGOs;
     ObjectPool pool;
     GameObject tileHolder;
+    CameraShaker cameraShaker;
 
     int darknessLevel;
     struct Darkness
@@ -45,9 +46,22 @@ public class MapManager  {
         Global.OnTurnChange.RegisterListener(SpreadDarkness);
     }
 
+    public void ClearTiles()
+    {
+        for (int i = 0; i < TileGOs.Length; i++)
+        {
+            TileGOs[i].mainGO.transform.SetParent(null);
+            TileGOs[i].mainGO.transform.position = Vector2.zero;
+            pool.PoolObject(TileGOs[i].mainGO);
+
+        }
+        Global.OnMapCleared mapCleared = new OnMapCleared();
+        mapCleared.FireEvent();
+    }
     
     public void NewMap(Vector2 mapWorldOrigin, int darknessLevel = 0, int mapWidth = 9, int mapHeight = 9)
     {
+        cameraShaker = CameraShaker.instance;
         this.darknessLevel = darknessLevel;
         this.mapWidth = mapWidth;
         this.mapHeight = mapHeight;
@@ -60,7 +74,15 @@ public class MapManager  {
         tileHolder.transform.position = mapWorldOrigin;
 
         // Generate the map
-        Map = new GameMap(mapWidth, mapHeight, mapWorldOrigin, OnTileChange);
+        if (Map != null)
+        {
+            Map.ResetMap();
+        }
+        else
+        {
+            Map = new GameMap(mapWidth, mapHeight, mapWorldOrigin, OnTileChange);
+        }
+            
 
         // Make darness map
         darknessMap = new Darkness[mapWidth * mapHeight];
@@ -111,7 +133,13 @@ public class MapManager  {
         }
         Map.SetTileType(exitTilePos.x, exitTilePos.y, TileType.Exit);
 
+        Global.OnMapCreated onMapCreated = new OnMapCreated();
+        onMapCreated.entranceWorldPosition = Vector2.right;
+        onMapCreated.exitWorldPosition = exitTilePos;
+        onMapCreated.FireEvent();
+
     }
+
 
     void OnTileChange(TileType tileType, int index)
     {
@@ -136,28 +164,9 @@ public class MapManager  {
 
         int mapwidth = Map.mapWidth;
         int mapHeight = Map.mapHeight;
-        //for (int x = 0; x < mapwidth; x++)
-        //{
-        //    for (int y = 0; y < mapHeight; y++)
-        //    {
-        //        if(x == darknessLevel)
-        //        {
-        //            Map.SetTileType(x, y, TileType.Darkness);
-        //        }
-        //        else if (x == mapwidth - (1 + darknessLevel))
-        //        {
-        //            Map.SetTileType(x, y, TileType.Darkness);
-        //        }
-        //        if (y == darknessLevel)
-        //        {
-        //            Map.SetTileType(x, y, TileType.Darkness);
-        //        }
-        //        else if(y == mapHeight - (1 + darknessLevel))
-        //        {
-        //            Map.SetTileType(x, y, TileType.Darkness);
-        //        }
-        //    }
-        //}
+
+        bool causedCamShake = false;
+
         if (darknessLevel > 0)
         {
             int darkCount = 0;
@@ -182,6 +191,11 @@ public class MapManager  {
                         if (darknessMap[x + y * mapWidth].darkValue >= 1)
                         {
                             Map.SetTileType(x, y, TileType.Darkness);
+                            if (causedCamShake == false)
+                            {
+                                causedCamShake = true;
+                               // cameraShaker.AddTrauma(8, 2);
+                            }
                         }
                         else
                         {
@@ -197,4 +211,19 @@ public class MapManager  {
         TurnManager.instance.FinishTurn();
     }
 
+    public bool ClearDarkTile(Vector2 worlPos)
+    {
+        int x = Mathf.FloorToInt(worlPos.x);
+        int y = Mathf.FloorToInt(worlPos.y);
+        MapTile tile = Map.GetTile(worlPos);
+        if (tile == null)
+            return false;
+        if (darknessMap[x + y * Map.mapWidth].darkValue >= 1)
+        {
+            darknessMap[x + y * Map.mapWidth].darkValue = 0;
+            Map.SetTileType(x, y, TileType.Floor);
+            return true;
+        }
+        return false;
+    }
 }

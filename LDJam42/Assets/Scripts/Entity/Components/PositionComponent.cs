@@ -5,9 +5,10 @@ using UnityEngine;
 
 public class PositionComponent : EntityComponent
 {
-    Action<MoveData> OnInputReceived;
+    Action<MoveData> OnInputProcessed;
+    Func<PositionComponent, Entity, bool> OnInputNeeded;
 
-    public MoveData moveData;
+    public MoveData moveData, directionData;
 
     Func<MoveData, bool> CanMoveTo;
 
@@ -24,6 +25,8 @@ public class PositionComponent : EntityComponent
     {
         if (entityGO == null)
             return;
+
+        OnInputNeeded = AbilitySystem.instance.IsInputNeeded;
         RegisterCBListener<Action<MoveData>>((data) => MoveSystem.instance.ChangePosition(data, entityGO.transform));
         CanMoveTo += MapManager.instance.CanMoveTo;
         thisEntity = entity;
@@ -31,36 +34,66 @@ public class PositionComponent : EntityComponent
         actionManager.InitEntityOnTile(thisEntity, moveData);
     }
 
-    public void Move(MoveData directionData)
+    public void Move(MoveData direction)
     {
-        MoveData newMoveData = new MoveData(this.moveData.X + directionData.X, this.moveData.Y + directionData.Y);
+        if (direction.X == 0 && direction.Y == 0)
+        {
+            TryEndTurn();
+            return;
+        }
+
+        directionData = direction;
+
+        if (OnInputNeeded != null)
+        {
+            if (OnInputNeeded(this, thisEntity) == true)
+                return;
+        }
+
+        MoveData newMoveData = new MoveData(this.moveData.X + direction.X, this.moveData.Y + direction.Y);
         // Save current move data to unregister from current tile
         MoveData lastData = moveData;
-
         if (CanMoveTo(newMoveData) == false)
         {
-            if (thisEntity.CanEndTurnCB != null)
-            {
-                if (thisEntity.CanEndTurnCB() == true)
-                {
-                    TurnManager.instance.FinishTurn();
-                }
-            }
+            if (thisEntity.isPlayer == false)
+                TryEndTurn();
             return;
         }
         if (actionManager.DoTileAction(thisEntity, lastData, newMoveData) == false)
+        {
+            if (thisEntity.isActive == true && thisEntity.CanEndTurnCB() == true)
+            {
+                TurnManager.instance.FinishTurn();
+            }
+
             return;
+        }
 
         // Set new move data
         moveData = newMoveData;
        
         // Move transform
-        if (OnInputReceived != null)
+        if (OnInputProcessed != null)
         {
-            OnInputReceived(moveData);
+            OnInputProcessed(moveData);
         }
 
+        if (thisEntity.CanEndTurnCB() == true)
+        {
+            TurnManager.instance.FinishTurn();
+        }
         //Debug.Log("new position x:" + moveData.X + " new position y :" + moveData.Y);
+    }
+
+    void TryEndTurn()
+    {
+        if (thisEntity.CanEndTurnCB != null)
+        {
+            if (thisEntity.CanEndTurnCB() == true)
+            {
+                TurnManager.instance.FinishTurn();
+            }
+        }
     }
 
     public MoveData GetPositionData()
@@ -70,11 +103,11 @@ public class PositionComponent : EntityComponent
 
     public override void RegisterCBListener<T>(T listener)
     {
-        OnInputReceived += listener as Action<MoveData>;
+        OnInputProcessed += listener as Action<MoveData>;
     }
 
     public override void UnRegisterCBListener<T>(T listener)
     {
-        OnInputReceived -= listener as Action<MoveData>;
+        OnInputProcessed -= listener as Action<MoveData>;
     }
 }
