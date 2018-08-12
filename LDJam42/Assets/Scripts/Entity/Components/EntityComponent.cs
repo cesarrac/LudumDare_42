@@ -28,6 +28,10 @@ public enum ComponentID
     Turn,
     AI,
     Item,
-    Abilities
+    Abilities,
+    Inventory,
+    Equipment,
+    Weapon,
+    Armor
 }
 

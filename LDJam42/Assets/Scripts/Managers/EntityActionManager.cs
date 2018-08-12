@@ -16,7 +16,7 @@ public class EntityActionManager : MonoBehaviour
         mapManager = MapManager.instance;
         cameraShaker = CameraShaker.instance;
     }
-    public void InitEntityOnTile(Entity entity, MoveData curPositionData)
+    public void EntityOnTileChanged(Entity entity, MoveData curPositionData)
     {
         MapTile curTile = mapManager.Map.GetTile(new Vector2(curPositionData.X, curPositionData.Y));
         if (curTile == null)
@@ -24,7 +24,10 @@ public class EntityActionManager : MonoBehaviour
             Debug.LogError("Entity: " + entity.Name + " is standing on a NULL TILE!!");
             return;
         }
-        curTile.RegisterEntity(entity);
+        if (entity.isActive == true)
+            curTile.RegisterEntity(entity);
+        else
+            curTile.UnRegisterEntity(entity);
     }
     /// <summary>
     /// Returns true if Entity can move to next tile,
@@ -103,6 +106,8 @@ public class EntityActionManager : MonoBehaviour
         if (nextTile.entities.Count > 1)
         {
             // figure this out...
+            Debug.LogError("tried to step into a tile that has more than one entity registered on it!");
+            return false;
         }
         if (nextTile.entities[0].entityType == EntityType.Unit)
         {
@@ -112,9 +117,20 @@ public class EntityActionManager : MonoBehaviour
             FighterComponent defender = (FighterComponent)nextTile.entities[0].GetEntityComponent(ComponentID.Fighter);
             return DoCombat(attacker, defender);
         }
-        else
+        else if (nextTile.entities[0].entityType == EntityType.Item)
         {
+            Debug.Log("ON AN ITEM TILE!!");
             // do item pick up
+            EntityComponent comp = interactor.GetEntityComponent(ComponentID.Inventory);
+            if (comp == null)
+                return true;
+            ItemComponent item = (ItemComponent)nextTile.entities[0].GetEntityComponent(ComponentID.Item);
+            InventoryComponent inventory = (InventoryComponent)comp;
+            if (inventory.AddItem(item) == true)
+            {
+                item.PickUp();
+            }
+            return true;
         }
 
         return true;
@@ -130,14 +146,18 @@ public class EntityActionManager : MonoBehaviour
     /// <returns></returns>
     private bool DoCombat(FighterComponent attacker, FighterComponent defender)
     {
-        Debug.Log("Attacker attacks with power " + attacker.GetAttackPower());
-        Debug.Log("Defender defends with power " + defender.GetDefensePower());
+        int attackPower = attacker.GetAttackPower();
+        Debug.Log("Attacker attacks with power " + attackPower);
+        //Debug.Log("Defender defends with power " + defender.GetDefensePower());
 
-        if (defender.thisEntity.isPlayer == true)
+        int damage = attackPower - defender.GetDefensePower();
+        Debug.Log("After defense mitigation... damage is " + damage);
+
+        if (defender.thisEntity.isPlayer == true && damage > 0)
         {
             cameraShaker.AddTrauma(5.2f, 2.8f);
         }
 
-        return defender.ReceiveDamage(attacker.GetAttackPower());
+        return defender.ReceiveDamage(damage);
     }
 }

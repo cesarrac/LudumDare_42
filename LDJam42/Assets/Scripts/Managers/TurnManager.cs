@@ -17,7 +17,7 @@ public class TurnManager  {
         OnTurnChange = new Global.OnTurnChange();
         OnTurnChange.newTurnState = turnState;
         OnTurnChange.FireEvent();
-        Debug.Log("Starting turn: " + turnState);
+        //Debug.Log("Starting turn: " + turnState);
         Global.PlayerReachedExit.RegisterListener(OnPlayerExit);
         Global.PlayerDeath.RegisterListener(OnPlayerDeath);
     }
@@ -31,7 +31,7 @@ public class TurnManager  {
 
     private void OnPlayerDeath(PlayerDeath data)
     {
-        Debug.Log("OnPlayerDeath");
+        //Debug.Log("OnPlayerDeath");
         turnState = TurnState.NULL;
         OnTurnChange.newTurnState = turnState;
         OnTurnChange.FireEvent();
@@ -54,13 +54,13 @@ public class TurnManager  {
         if (curState + 1 >= System.Enum.GetValues(typeof(TurnState)).Length)
         {
             turnState = (TurnState)1;
-            Debug.Log("Starting turn: " + turnState);
+            //Debug.Log("Starting turn: " + turnState);
             OnTurnChange.newTurnState = turnState;
             OnTurnChange.FireEvent();
             return;
         }
         turnState = (TurnState)curState + 1;
-        Debug.Log("Starting turn: " + turnState);
+        //Debug.Log("Starting turn: " + turnState);
         OnTurnChange.newTurnState = turnState;
         OnTurnChange.FireEvent();
     }

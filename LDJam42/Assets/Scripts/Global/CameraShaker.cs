@@ -48,7 +48,7 @@ public class CameraShaker : MonoBehaviour {
 		transform.localRotation = Quaternion.Euler(0, 0, shakeAngle);
 	}
 	void StopShake(){
-		Debug.Log("Stop shake");
+		//Debug.Log("Stop shake");
         transform.localPosition = Vector3.zero;
 		isShaking = false;
 		//transform.Translate(-transform.position.x, 0, 0, transform.parent);

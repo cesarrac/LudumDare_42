@@ -8,6 +8,7 @@ public class FighterComponent : EntityComponent
     public Entity thisEntity { get; protected set; }
     float startHP;
     public float curHP;
+    public EquipmentComponent equipment { get; protected set; }
 
     public FighterComponent(int attackPower, int defensePower, float startHP) : base(ComponentID.Fighter)
     {
@@ -18,16 +19,29 @@ public class FighterComponent : EntityComponent
     public override void Init(Entity entity, GameObject entityGO)
     {
         thisEntity = entity;
+        EntityComponent comp = entity.GetEntityComponent(ComponentID.Equipment);
+        if (comp != null)
+            equipment = (EquipmentComponent)comp;
     }
 
     public int GetAttackPower()
     {
-        // todo add equipment call backs to add to attack power (weapon)
+        if (equipment != null)
+        {
+            int power = equipment.GetAttackPower();
+            if (power > 0)
+                return power;
+        }
         return attackData.AttackPower;
     }
     public int GetDefensePower()
     {
-        // todo add equipment call backs to add to defense power (armor)
+        if (equipment != null)
+        {
+            int defnse = equipment.GetDefensePower();
+            if (defnse > 0)
+                return defnse;
+        }
         return attackData.DefensePower;
     }
     public bool ReceiveDamage(float damage)

@@ -56,7 +56,9 @@ public class Game_Manager : MonoBehaviour {
             start + Vector2.up * 2,
             start + Vector2.up * 3
         };
-        EntityManager.instance.SpawnEnemies(spawnPositions);
+        EntityManager.instance.SpawnEnemies("Enemy", spawnPositions);
+
+        EntityManager.instance.SpawnItem("Sword", data.exitWorldPosition + Vector2.right);
     }
 
     private void OnPlayerExit(PlayerReachedExit data)

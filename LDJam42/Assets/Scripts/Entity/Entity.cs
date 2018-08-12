@@ -11,7 +11,7 @@ public class Entity  {
     public Func<bool> CanEndTurnCB;
     public bool isActive { get; protected set; }
     public bool isPlayer { get; protected set; }
-    public Action OnDeactivate;
+    public Action<bool> OnActiveChanged;
     public Faction faction { get; protected set; }
 
     public Entity(string name, EntityType eType)
@@ -50,7 +50,7 @@ public class Entity  {
         }
         return null;
     }
-    public void OnActiveChange(bool active)
+    public void ChangeActiveStatus(bool active)
     {
         if (active)
         {
@@ -59,10 +59,11 @@ public class Entity  {
         else
         {
             isActive = false;
-            if (OnDeactivate != null)
-            {
-                OnDeactivate();
-            }
+            
+        }
+        if (OnActiveChanged != null)
+        {
+            OnActiveChanged(isActive);
         }
     }
 }

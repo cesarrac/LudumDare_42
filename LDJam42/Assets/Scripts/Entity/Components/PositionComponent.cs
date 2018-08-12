@@ -28,10 +28,10 @@ public class PositionComponent : EntityComponent
 
         OnInputNeeded = AbilitySystem.instance.IsInputNeeded;
         RegisterCBListener<Action<MoveData>>((data) => MoveSystem.instance.ChangePosition(data, entityGO.transform));
-        CanMoveTo += MapManager.instance.CanMoveTo;
+        CanMoveTo = MapManager.instance.CanMoveTo;
         thisEntity = entity;
         actionManager = EntityActionManager.instance;
-        actionManager.InitEntityOnTile(thisEntity, moveData);
+        actionManager.EntityOnTileChanged(thisEntity, moveData);
     }
 
     public void Move(MoveData direction)

@@ -262,12 +262,12 @@ public class MapTile
     public void RegisterEntity(Entity entity)
     {
         entities.Add(entity);
-        //Debug.Log("Entity " + entity.Name + " registered to tile");
+        //Debug.Log("Entity " + entity.Name + " registered to tile " + worldPosition);
     }
     public void UnRegisterEntity(Entity entity)
     {
         entities.Remove(entity);
-        //Debug.Log("Entity " + entity.Name + " UNregistered to tile");
+        Debug.Log("Entity " + entity.Name + " UNregistered to tile");
     }
 }
 
