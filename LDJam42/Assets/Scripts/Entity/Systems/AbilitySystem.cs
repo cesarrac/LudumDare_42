@@ -23,19 +23,19 @@ public class AbilitySystem : MonoBehaviour
     {
         if (ability.NeedsInput == false)
         {
-            CastAbility(caster, ability.ID);
+            CastAbility(caster, ability.ID, ability.Description);
         }
-        casters.Add(new AbilityCaster(caster, ability.ID, ability.NeedsInput));
+        casters.Add(new AbilityCaster(caster, ability.ID, ability.NeedsInput, ability.Description));
     }
 
-    private void CastAbility(Entity caster, AbilityID abilityID)
+    private void CastAbility(Entity caster, AbilityID abilityID, string description)
     {
         switch (abilityID)
         {
             case AbilityID.Blood_For_Light:
                 PositionComponent poC = (PositionComponent)caster.GetEntityComponent(ComponentID.Position);
                 FighterComponent fighter = (FighterComponent)caster.GetEntityComponent(ComponentID.Fighter);
-                CastBloodForLight(fighter, poC.moveData, poC.directionData);
+                CastBloodForLight(fighter, poC.moveData, poC.directionData, description);
                 break;
             default:
                 break;
@@ -48,7 +48,7 @@ public class AbilitySystem : MonoBehaviour
         {
             if (casters[i].caster == entity && casters[i].waitsForInput == true)
             {
-                CastAbility(entity, casters[i].abID);
+                CastAbility(entity, casters[i].abID, casters[i].abilityDesc);
                 casters.RemoveAt(i);
                 return true;
             }
@@ -58,7 +58,7 @@ public class AbilitySystem : MonoBehaviour
         
     }
 
-    void CastBloodForLight(FighterComponent casterFighter, MoveData position, MoveData direction)
+    void CastBloodForLight(FighterComponent casterFighter, MoveData position, MoveData direction, string abDesc)
     {
         if (MapManager.instance.ClearDarkTile(new Vector2(position.X + direction.X, position.Y + direction.Y)) == false)
             return;
@@ -66,7 +66,7 @@ public class AbilitySystem : MonoBehaviour
         // Caster takes 25% of its health
         float dmg = casterFighter.curHP * 0.25f;
         casterFighter.ReceiveDamage(dmg);
-        Debug.Log("CASTING CastDispelDarkness");
+        MessageLog_Manager.NewMessage(abDesc, Color.green);
 
     }
 
@@ -77,11 +77,13 @@ public struct AbilityCaster
     public Entity caster;
     public AbilityID abID;
     public bool waitsForInput;
+    public string abilityDesc;
 
-    public AbilityCaster(Entity caster, AbilityID abilityID, bool waitsForInput)
+    public AbilityCaster(Entity caster, AbilityID abilityID, bool waitsForInput, string desc)
     {
         this.caster = caster;
         this.abID = abilityID;
+        this.abilityDesc = desc;
         this.waitsForInput = waitsForInput;
     }
 }

@@ -9,28 +9,24 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fd4a21afb3f250f46a89aeef8c267c40, type: 3}
-  m_Name: Enemy
+  m_Name: Golden Helm
   m_EditorClassIdentifier: 
   components:
   - className: RenderComponent
     compParams:
     - fieldType: 0
-      value: Enemy
-  - className: PositionComponent
+      value: Golden Helm
+  - className: ItemComponent
     compParams:
-    - fieldType: 2
-      value: 0
-    - fieldType: 2
-      value: 0
-  - className: FighterComponent
+    - fieldType: 0
+      value: Golden Helm
+    - fieldType: 1
+      value: 2
+  - className: ArmorComponent
     compParams:
     - fieldType: 1
-      value: 1
-    - fieldType: 1
       value: 0
-    - fieldType: 2
-      value: 1
-  - className: EnemyComponent
-    compParams: []
-  Name: Enemy
-  entityType: 0
+    - fieldType: 1
+      value: 3
+  Name: Golden Helm
+  entityType: 1

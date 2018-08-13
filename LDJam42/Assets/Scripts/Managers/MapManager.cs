@@ -113,13 +113,13 @@ public class MapManager  {
 
             darknessMap[i] = new Darkness(Map.Tiles[i].GridPosition.x, Map.Tiles[i].GridPosition.y, 0);
             // Set exit
-            //if (exitTilePos == Vector2Int.zero)
-            //{
-            //    if (UnityEngine.Random.Range(1, 4) == 1)
-            //    {
-            //        exitTilePos = Map.Tiles[i].GridPosition;
-            //    }
-            //}
+            if (exitTilePos == Vector2Int.zero)
+            {
+                if (UnityEngine.Random.Range(1, 50) == 1)
+                {
+                    exitTilePos = Map.Tiles[i].GridPosition;
+                }
+            }
 
             TileGOs[i] = tileGOData;
         }

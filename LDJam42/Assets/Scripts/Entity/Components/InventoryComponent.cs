@@ -8,6 +8,7 @@ public class InventoryComponent : EntityComponent
     ItemComponent[] items;
     PositionComponent positionComponent;
     EquipmentComponent equipment;
+    Entity thisEntity;
     public InventoryComponent() : base(ComponentID.Inventory)
     {
        
@@ -18,22 +19,32 @@ public class InventoryComponent : EntityComponent
         items = new ItemComponent[maxSpaces];
         positionComponent = (PositionComponent)entity.GetEntityComponent(ComponentID.Position);
         equipment = (EquipmentComponent)entity.GetEntityComponent(ComponentID.Equipment);
+        thisEntity = entity;
     }
 
     public bool AddItem(ItemComponent item)
     {
-        int emptyIndex = FindEmptyIndex();
-        if (emptyIndex < 0)
-            return false;
+        //int emptyIndex = FindEmptyIndex();
+        //if (emptyIndex < 0)
+        //    return false;
         if (item.itemType == ItemType.Armor || item.itemType == ItemType.Weapon)
         {
             equipment.AddEquipment(item);
             return true;
         }
+        else
+        {
+            FighterComponent fighterComponent = (FighterComponent)thisEntity.GetEntityComponent(ComponentID.Fighter);
+            HealthDropComponent consumable = (HealthDropComponent)item.thisEntity.GetEntityComponent(ComponentID.Consumable);
+            fighterComponent.GainHealth(consumable.healthGained);
+            MessageLog_Manager.NewMessage("You consume " + item.itemName, Color.green);
+            return true;
+        }
 
-        items[emptyIndex] = item;
-        Debug.Log(item.itemName + " added to inventory at index " + emptyIndex);
-        return true;
+        //items[emptyIndex] = item;
+        //Debug.Log(item.itemName + " added to inventory at index " + emptyIndex);
+        //MessageLog_Manager.NewMessage("You pick up " + item.itemName, Color.yellow);
+        //return true;
     }
     public void Drop(int index)
     {

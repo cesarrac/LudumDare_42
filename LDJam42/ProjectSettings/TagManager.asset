@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - MessageLog
+  - InfoUI
+  - HealthBar
+  - Canvas
   layers:
   - Default
   - TransparentFX
@@ -43,6 +47,9 @@ TagManager:
     locked: 0
   - name: Floor
     uniqueID: 1178808221
+    locked: 0
+  - name: Items
+    uniqueID: 2499504617
     locked: 0
   - name: Units
     uniqueID: 2653544379

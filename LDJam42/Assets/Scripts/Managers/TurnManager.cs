@@ -4,22 +4,30 @@ using System.Collections.Generic;
 using Global;
 using UnityEngine;
 
-public class TurnManager  {
+public class TurnManager {
 
     public static TurnManager instance { get; protected set; }
-    TurnState turnState;
+    TurnState turnState, storedState;
     Global.OnTurnChange OnTurnChange;
-
-    public TurnManager(TurnState startTurnState)
+    //float timeToHold = 0.25f;
+    //private void Awake()
+    //{
+    //    instance = this;
+        
+    //    Global.PlayerReachedExit.RegisterListener(OnPlayerExit);
+    //    Global.PlayerDeath.RegisterListener(OnPlayerDeath);
+    //}
+    public TurnManager()
     {
         instance = this;
-        turnState = startTurnState;
+
+        Global.PlayerReachedExit.RegisterListener(OnPlayerExit);
+        Global.PlayerDeath.RegisterListener(OnPlayerDeath);
+        turnState = TurnState.Player;
         OnTurnChange = new Global.OnTurnChange();
         OnTurnChange.newTurnState = turnState;
         OnTurnChange.FireEvent();
-        //Debug.Log("Starting turn: " + turnState);
-        Global.PlayerReachedExit.RegisterListener(OnPlayerExit);
-        Global.PlayerDeath.RegisterListener(OnPlayerDeath);
+      //  Debug.Log("Starting turn: " + turnState);
     }
 
     public void Restart()
@@ -49,21 +57,40 @@ public class TurnManager  {
     {
         if (turnState == TurnState.NULL)
             return;
-
+        StartNext();
+        //StopCoroutine("Hold");
+        //storedState = turnState;
+        //StartCoroutine("Hold");
+        
+    }
+    void StartNext()
+    {
         int curState = (int)turnState;
         if (curState + 1 >= System.Enum.GetValues(typeof(TurnState)).Length)
         {
             turnState = (TurnState)1;
-            //Debug.Log("Starting turn: " + turnState);
+            //MessageLog_Manager.NewMessage("New turn... ", Color.green);
             OnTurnChange.newTurnState = turnState;
             OnTurnChange.FireEvent();
             return;
         }
         turnState = (TurnState)curState + 1;
+        
+        
         //Debug.Log("Starting turn: " + turnState);
         OnTurnChange.newTurnState = turnState;
         OnTurnChange.FireEvent();
     }
+    //IEnumerator Hold()
+    //{
+    //    turnState = TurnState.NULL;
+    //    OnTurnChange.newTurnState = turnState;
+    //    OnTurnChange.FireEvent();
+    //    yield return new WaitForSeconds(timeToHold);
+    //    turnState = storedState;
+    //    StartNext();
+    //    yield return null;
+    //}
 }
 
 public enum TurnState

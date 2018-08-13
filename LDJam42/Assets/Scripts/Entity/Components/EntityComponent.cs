@@ -32,6 +32,7 @@ public enum ComponentID
     Inventory,
     Equipment,
     Weapon,
-    Armor
+    Armor,
+    Consumable
 }
 

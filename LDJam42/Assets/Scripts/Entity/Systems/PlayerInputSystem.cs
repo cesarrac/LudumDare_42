@@ -13,11 +13,38 @@ public class PlayerInputSystem : MonoBehaviour
     InputState inputState;
     List<DynamicKeyAction> dynamicKeyActions;
 
+    Vector2Int mousePos, lastMousePos;
+    MapManager mapManager;
+    InfoUI infoUI;
+    GameObject canvas;
+
+    bool canFindTile = false;
+
     private void Awake()
     {
         instance = this;
         dynamicKeyActions = new List<DynamicKeyAction>();
         Global.OnTurnChange.RegisterListener(OnTurnChanged);
+        mousePos = lastMousePos = Vector2Int.zero;
+        Global.OnMapCleared.RegisterListener(OnNOMap);
+        Global.OnMapCreated.RegisterListener(OnMapStart);
+        canvas = GameObject.FindGameObjectWithTag("Canvas");
+    }
+
+    private void OnMapStart(OnMapCreated data)
+    {
+        canFindTile = true;
+    }
+
+    private void OnNOMap(OnMapCleared data)
+    {
+        canFindTile = false;
+    }
+
+    private void Start()
+    {
+        mapManager = MapManager.instance;
+        infoUI = (InfoUI)UI_Manager.instance.GetUIComponent("InfoUI");
     }
     private void OnTurnChanged(OnTurnChange data)
     {
@@ -77,6 +104,58 @@ public class PlayerInputSystem : MonoBehaviour
                 {
                     dynamicKeyActions[i].action();
                 }
+            }
+        }
+
+
+        if (canFindTile == false)
+            return;
+        mousePos = Vector2Int.FloorToInt(Camera.main.ScreenToWorldPoint(Input.mousePosition));
+        if (mousePos != lastMousePos)
+        {
+            lastMousePos = mousePos;
+            infoUI.Clear();
+            MapTile tile = mapManager.Map.GetTile(mousePos.x, mousePos.y);
+            if (tile == null)
+            {
+                infoUI.DeActivate();
+                return;
+            }
+            if (tile.entities.Count <= 0)
+            {
+                infoUI.DeActivate();
+                return;
+            }
+            else
+            {
+                Message[] info = new Message[3];
+                if (tile.entities[0].entityType == EntityType.Unit)
+                {
+                    FighterComponent fighter = (FighterComponent)tile.entities[0].GetEntityComponent(ComponentID.Fighter);
+                    info[0] = new Message(fighter.thisEntity.Name, Color.white);
+                    info[1] = new Message(fighter.GetAttackPower().ToString(), Color.red);
+                    info[2] = new Message(fighter.GetDefensePower().ToString(), Color.cyan);
+                }
+                else if (tile.entities[0].entityType == EntityType.Item)
+                {
+                    ItemComponent item = (ItemComponent)tile.entities[0].GetEntityComponent(ComponentID.Item);
+                    info[0] = new Message(item.itemName, Color.white);
+                    if (item.itemType == ItemType.Weapon)
+                    {
+                        WeaponComponent wpn = (WeaponComponent)tile.entities[0].GetEntityComponent(ComponentID.Weapon);
+                        info[1] = new Message(wpn.weaponAttackStats.AttackPower.ToString(), Color.red);
+                        info[2] = new Message(wpn.weaponAttackStats.DefensePower.ToString(), Color.cyan);
+                    }
+                    else if (item.itemType == ItemType.Armor)
+                    {
+                        ArmorComponent armor = (ArmorComponent)tile.entities[0].GetEntityComponent(ComponentID.Armor);
+                        info[1] = new Message(armor.armorAttackStats.AttackPower.ToString(), Color.red);
+                        info[2] = new Message(armor.armorAttackStats.DefensePower.ToString(), Color.cyan);
+                    }
+                }
+                infoUI.Activate();
+                infoUI.UpdateTexts(info);
+                infoUI.UpdatePosition(mousePos + Vector2.left * 2, canvas);
             }
         }
     }

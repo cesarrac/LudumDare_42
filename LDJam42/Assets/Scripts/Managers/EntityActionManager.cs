@@ -69,6 +69,23 @@ public class EntityActionManager : MonoBehaviour
             }
         }
 
+        // DARKNESS DAMAGE
+        if (curTile.tileType == TileType.Darkness)
+        {
+            if (entity.isPlayer == true)
+            {
+                MessageLog_Manager.NewMessage("The POISON CONSUMES YOU!", Color.red);
+
+            }
+            else
+            {
+                MessageLog_Manager.NewMessage("The POISON CONSUMES " + entity.Name, Color.red);
+            }
+            FighterComponent attacker = (FighterComponent)entity.GetEntityComponent(ComponentID.Fighter);
+            attacker.ReceiveDamage(1000);
+            return false;
+        }
+
         // Normal move action happens
         if (nextTile != curTile)
         {
@@ -147,17 +164,50 @@ public class EntityActionManager : MonoBehaviour
     private bool DoCombat(FighterComponent attacker, FighterComponent defender)
     {
         int attackPower = attacker.GetAttackPower();
-        Debug.Log("Attacker attacks with power " + attackPower);
+       // Debug.Log("Attacker attacks with power " + attackPower);
         //Debug.Log("Defender defends with power " + defender.GetDefensePower());
-
+        //if (attacker.thisEntity.isPlayer == true)
+        //{
+        //    MessageLog_Manager.NewMessage("You attack the " + defender.thisEntity.Name + " with " + attackPower + " attack!", Color.red);
+        //}
         int damage = attackPower - defender.GetDefensePower();
-        Debug.Log("After defense mitigation... damage is " + damage);
+        //Debug.Log("After defense mitigation... damage is " + damage);
 
-        if (defender.thisEntity.isPlayer == true && damage > 0)
+        if (damage > 0)
         {
-            cameraShaker.AddTrauma(5.2f, 2.8f);
+            if (defender.thisEntity.isPlayer == true)
+            {
+                cameraShaker.AddTrauma(5.2f, 2.8f);
+                MessageLog_Manager.NewMessage(attacker.thisEntity.Name + " hits you for " + damage.ToString() + "!", Color.white);
+            }
+            else
+            {
+                MessageLog_Manager.NewMessage("You hit the " + defender.thisEntity.Name + " for " + damage.ToString() + "!", Color.red);
+            }
+        }
+        else
+        {
+            if (attacker.thisEntity.isPlayer == true)
+            {
+                MessageLog_Manager.NewMessage(defender.thisEntity.Name + "'s defense absorb your attack!", Color.white);
+            }
+            else
+            {
+                MessageLog_Manager.NewMessage("Your defenses absorb the attack!", Color.white);
+            }
+        }
+        
+        bool result = defender.ReceiveDamage(damage);
+        if (result == true)
+        {
+            if (attacker.thisEntity.isPlayer == true)
+            {
+                MessageLog_Manager.NewMessage(defender.thisEntity.Name + " DIES!", Color.red);
+            }
+            else
+                MessageLog_Manager.NewMessage(attacker.thisEntity.Name + " KILLS YOU!", Color.red);
         }
 
-        return defender.ReceiveDamage(damage);
+        return result;
     }
 }

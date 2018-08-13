@@ -29,6 +29,7 @@ public class EquipmentComponent : EntityComponent
                 DropCurWpn();
             weapon = (WeaponComponent)wComp;
             Debug.Log("WEAPON added to equipment - " + itemComponent.itemName);
+            MessageLog_Manager.NewMessage("You equip a " + itemComponent.itemName, Color.cyan);
             return true;
         }
         else if (itemComponent.itemType == ItemType.Armor)
@@ -40,6 +41,7 @@ public class EquipmentComponent : EntityComponent
                 DropCurArmor();
             armor = (ArmorComponent)aComp;
             Debug.Log("ARMOR added to equipment - " + itemComponent.itemName);
+            MessageLog_Manager.NewMessage("You equip a " + itemComponent.itemName, Color.cyan);
             return true;
         }
         return false;

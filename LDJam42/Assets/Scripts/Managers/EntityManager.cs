@@ -204,7 +204,7 @@ public class EntityManager : MonoBehaviour
         newEntity.InitComponent(entityGO);
         
         AbilityComponent abilityComponent = (AbilityComponent)newEntity.GetEntityComponent(ComponentID.Abilities);
-        abilityComponent.AddAbility(AbilityID.Blood_For_Light, true, "Remove Darkness for 25% HP");
+        abilityComponent.AddAbility(AbilityID.Blood_For_Light, true, "The Darkness is pushed back by the sting of your blood!");
 
         InventoryComponent inventoryComponent = (InventoryComponent)newEntity.GetEntityComponent(ComponentID.Inventory);
         PlayerInputSystem.instance.AddDynamicKeys(() => inventoryComponent.Drop(0), "t");

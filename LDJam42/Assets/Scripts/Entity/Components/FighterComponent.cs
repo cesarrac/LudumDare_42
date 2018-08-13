@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,8 +8,9 @@ public class FighterComponent : EntityComponent
     AttackData attackData;
     public Entity thisEntity { get; protected set; }
     float startHP;
-    public float curHP;
+    public float curHP { get; protected set; }
     public EquipmentComponent equipment { get; protected set; }
+    Action<float, float> OnHPChanged; 
 
     public FighterComponent(int attackPower, int defensePower, float startHP) : base(ComponentID.Fighter)
     {
@@ -22,8 +24,19 @@ public class FighterComponent : EntityComponent
         EntityComponent comp = entity.GetEntityComponent(ComponentID.Equipment);
         if (comp != null)
             equipment = (EquipmentComponent)comp;
-    }
 
+        if (thisEntity.isPlayer == true)
+        {
+            OnHPChanged += UI_Manager.instance.HandlePlayerHealthUI;
+            UI_Manager.instance.HandlePlayerHealthUI(curHP, startHP);
+        }
+        else
+        {
+            OnHPChanged += UI_Manager.instance.HandleEnemyHealthUI;
+            UI_Manager.instance.HandleEnemyHealthUI(curHP, startHP);
+        }
+    }
+    
     public int GetAttackPower()
     {
         if (equipment != null)
@@ -34,6 +47,13 @@ public class FighterComponent : EntityComponent
         }
         return attackData.AttackPower;
     }
+
+    public void GainHealth(int healthGained)
+    {
+        curHP += healthGained;
+        curHP = Mathf.Clamp(curHP, 0, startHP);
+    }
+
     public int GetDefensePower()
     {
         if (equipment != null)
@@ -50,6 +70,10 @@ public class FighterComponent : EntityComponent
         curHP -= damage;
         curHP = Mathf.Clamp(curHP, 0, 1000);
 
+        if (OnHPChanged != null)
+        {
+            OnHPChanged(curHP, startHP);
+        }
         if (curHP <= 0)
         {
             Global.EntityDeath death = new Global.EntityDeath();

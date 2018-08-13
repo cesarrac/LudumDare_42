@@ -9,14 +9,18 @@ public class Game_Manager : MonoBehaviour {
     int Level = 0;
     int MaxLevel = 20;
 
+    string[] enemyProtoNames;
+
     private void Start()
     {
+        enemyProtoNames = new string[] { "Undead Robot", "Dark Spider", "Feral Frog", "Floater" };
         StartGame(1);
     }
     void StartGame (int curLevel = 1)
     {
         Level = curLevel;
-        new TurnManager(TurnState.Player);
+        new TurnManager();
+        //TurnManager.instance.Init();
         new MapManager();
         
         EntityActionManager.instance.Init();
@@ -46,7 +50,7 @@ public class Game_Manager : MonoBehaviour {
 
     void LoadLevel(OnMapCreated data)
     {
-
+        FXManager.instance.SpawnBackground(Vector2.zero, MapManager.instance.Map.mapWidth, MapManager.instance.Map.mapHeight);
         EntityManager.instance.SpawnPlayer(data.entranceWorldPosition);
 
         Vector2 start = Vector2.zero;
@@ -56,9 +60,9 @@ public class Game_Manager : MonoBehaviour {
             start + Vector2.up * 2,
             start + Vector2.up * 3
         };
-        EntityManager.instance.SpawnEnemies("Enemy", spawnPositions);
+        EntityManager.instance.SpawnEnemies(enemyProtoNames[0], spawnPositions);
 
-        EntityManager.instance.SpawnItem("Sword", data.exitWorldPosition + Vector2.right);
+        EntityManager.instance.SpawnItem("Food", data.exitWorldPosition + Vector2.right);
     }
 
     private void OnPlayerExit(PlayerReachedExit data)
