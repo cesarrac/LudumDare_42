@@ -6,9 +6,11 @@ public class EnemyComponent : EntityComponent
     Entity thisEntity;
     PositionComponent position;
     EntityActionManager actionManager;
-    public EnemyComponent() : base(ComponentID.AI)
-    {
+    public int enemyLevel { get; protected set; }
 
+    public EnemyComponent(int level) : base(ComponentID.AI)
+    {
+        enemyLevel = level;
     }
 
     public override void Init(Entity entity, GameObject entityGO)

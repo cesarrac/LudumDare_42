@@ -43,7 +43,7 @@ public class PositionComponent : EntityComponent
         CanMoveTo = null;
     }
 
-    public void Move(MoveData direction)
+    public void Move(MoveData direction, bool abilityMove = false)
     {
         if (direction.X == 0 && direction.Y == 0)
         {
@@ -53,7 +53,7 @@ public class PositionComponent : EntityComponent
 
         directionData = direction;
 
-        if (OnInputNeeded != null)
+        if (OnInputNeeded != null && abilityMove == false)
         {
             if (OnInputNeeded(this, thisEntity) == true)
                 return;

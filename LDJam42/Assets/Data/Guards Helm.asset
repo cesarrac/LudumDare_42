@@ -27,6 +27,6 @@ MonoBehaviour:
     - fieldType: 1
       value: 0
     - fieldType: 1
-      value: 2
+      value: 5
   Name: Guards Helm
   entityType: 1

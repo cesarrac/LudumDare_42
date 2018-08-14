@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
 using Global;
+using TMPro;
 
 public class UI_Manager : MonoBehaviour
 {
@@ -13,8 +14,10 @@ public class UI_Manager : MonoBehaviour
     BarUI barUI;
     public GameObject deathPanel, winPanel;
 
-    public Button UseAbilityButton;
+    public GameObject abilityButtonHolder;
 
+    ObjectPool pool;
+    InfoUI infoUI;
     private void Awake()
     {
         instance = this;
@@ -39,10 +42,16 @@ public class UI_Manager : MonoBehaviour
         winPanel.SetActive(false);
     }
 
-    public void AddButtonAction(Action action)
+    public void AddButtonAction(Action action, string abilityName)
     {
-        UseAbilityButton.onClick.RemoveAllListeners();
-        UseAbilityButton.onClick.AddListener(() => action());
+        if (pool == null)
+            pool = ObjectPool.instance;
+        GameObject button = pool.GetObjectForType("Ability Button", true, abilityButtonHolder.transform.position);
+        button.transform.SetParent(abilityButtonHolder.transform, false);
+        Button btn = button.GetComponent<Button>();
+        btn.onClick.RemoveAllListeners();
+        btn.onClick.AddListener(() => action());
+        btn.gameObject.GetComponentInChildren<TMP_Text>().text = abilityName;
     }
 
     private void OnPlayerDeath(PlayerDeath data)
@@ -61,6 +70,7 @@ public class UI_Manager : MonoBehaviour
             //new DynamicUIMenu("MiniMenuUI")
         };
         barUI = (BarUI)ui_Components[2];
+        infoUI = (InfoUI)ui_Components[1];
     }
 
     private void Init()
@@ -88,6 +98,10 @@ public class UI_Manager : MonoBehaviour
     public void HandleEnemyHealthUI(float current, float max)
     {
 
+    }
+    public void HandlePlayerXPLevel(int totalXP, int level)
+    {
+        barUI.UpdateXPValues(totalXP, level);
     }
 }
 

@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class HealthDropComponent : EntityComponent
 {
-    public int healthGained { get; protected set; }
+    public int healthGained;
     public HealthDropComponent(int healthGain) : base(ComponentID.Consumable)
     {
         healthGained = healthGain;
@@ -14,7 +14,10 @@ public class HealthDropComponent : EntityComponent
     {
         
     }
-
+    public int HealthGained()
+    {
+        return Random.Range(healthGained, healthGained + 10);
+    }
     public override void RegisterCBListener<T>(T listener)
     {
         throw new System.NotImplementedException();

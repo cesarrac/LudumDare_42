@@ -25,12 +25,14 @@ MonoBehaviour:
   - className: FighterComponent
     compParams:
     - fieldType: 1
-      value: 8
+      value: 27
     - fieldType: 1
-      value: 4
+      value: 0
     - fieldType: 2
-      value: 2
+      value: 80
   - className: EnemyComponent
-    compParams: []
+    compParams:
+    - fieldType: 1
+      value: 6
   Name: Dark Spider
   entityType: 0

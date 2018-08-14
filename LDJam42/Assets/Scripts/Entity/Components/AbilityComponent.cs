@@ -24,13 +24,20 @@ public class AbilityComponent : EntityComponent
 
     public void AddAbility(AbilityID abID, bool requiresInput, string description)
     {
+        string[] ab = abID.ToString().Split('_');
+        string abName = string.Empty;
+        for (int i = 0; i < ab.Length; i++)
+        {
+            abName += ab[i] + " ";
+        }
         if (abilities == null)
         {
             abilities = new Ability[] { new Ability(abID, requiresInput, description) };
 
             // add input
             playerInputSystem.AddDynamicKeys(() => abilitySystem.CallAbility(abilities[0], thisEntity), "1");
-            UI_Manager.instance.AddButtonAction(() => abilitySystem.CallAbility(abilities[0], thisEntity));
+           
+            UI_Manager.instance.AddButtonAction(() => abilitySystem.CallAbility(abilities[0], thisEntity), abName + description);
             return;
         }
         if (abilities.Length >= 10)
@@ -50,7 +57,8 @@ public class AbilityComponent : EntityComponent
         string keyName = (abilities.Length).ToString();
         if (abilities.Length >= 10)
             keyName = "0";
-        playerInputSystem.AddDynamicKeys(() => abilitySystem.CallAbility(abilities[0], thisEntity), keyName);
+        playerInputSystem.AddDynamicKeys(() => abilitySystem.CallAbility(abilities[abilities.Length - 1], thisEntity), keyName);
+        UI_Manager.instance.AddButtonAction(() => abilitySystem.CallAbility(abilities[abilities.Length - 1], thisEntity), abName + description);
     }
 
     public override void RegisterCBListener<T>(T listener)

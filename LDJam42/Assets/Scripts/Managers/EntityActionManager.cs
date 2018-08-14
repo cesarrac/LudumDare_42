@@ -204,6 +204,10 @@ public class EntityActionManager : MonoBehaviour
             if (attacker.thisEntity.isPlayer == true)
             {
                 MessageLog_Manager.NewMessage(defender.thisEntity.Name + " DIES!", Color.red);
+                // Gain xp for kill
+                XPComponent xPComponent = (XPComponent)attacker.thisEntity.GetEntityComponent(ComponentID.XP);
+                EnemyComponent enemy = (EnemyComponent)defender.thisEntity.GetEntityComponent(ComponentID.AI);
+                XPSystem.instance.DoXPGainAction(xPComponent.xpData, enemy.enemyLevel);
             }
             else
                 MessageLog_Manager.NewMessage(attacker.thisEntity.Name + " KILLS YOU!", Color.red);

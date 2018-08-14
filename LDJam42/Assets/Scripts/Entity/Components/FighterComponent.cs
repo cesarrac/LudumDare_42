@@ -7,15 +7,18 @@ public class FighterComponent : EntityComponent
 {
     AttackData attackData;
     public Entity thisEntity { get; protected set; }
-    float startHP;
+    float maxHP;
     public float curHP { get; protected set; }
     public EquipmentComponent equipment { get; protected set; }
-    Action<float, float> OnHPChanged; 
+    Action<float, float> OnHPChanged;
+
+    int[] hpAtLevel = new int[] { 60,80,100,120,140,160,180,200,220,240 };
+    int hpIndex = 0;
 
     public FighterComponent(int attackPower, int defensePower, float startHP) : base(ComponentID.Fighter)
     {
         attackData = new AttackData(attackPower, defensePower);
-        this.startHP = curHP = startHP;
+        this.maxHP = curHP = startHP;
     }
 
     public override void Init(Entity entity, GameObject entityGO)
@@ -28,12 +31,12 @@ public class FighterComponent : EntityComponent
         if (thisEntity.isPlayer == true)
         {
             OnHPChanged += UI_Manager.instance.HandlePlayerHealthUI;
-            UI_Manager.instance.HandlePlayerHealthUI(curHP, startHP);
+            UI_Manager.instance.HandlePlayerHealthUI(curHP, maxHP);
         }
         else
         {
             OnHPChanged += UI_Manager.instance.HandleEnemyHealthUI;
-            UI_Manager.instance.HandleEnemyHealthUI(curHP, startHP);
+            UI_Manager.instance.HandleEnemyHealthUI(curHP, maxHP);
         }
     }
     
@@ -49,7 +52,17 @@ public class FighterComponent : EntityComponent
     public void GainHealth(int healthGained)
     {
         curHP += healthGained;
-        curHP = Mathf.Clamp(curHP, 0, startHP);
+        curHP = Mathf.Clamp(curHP, 0, maxHP);
+    }
+    public void IncreaseMaxHealth()
+    {
+        if (hpIndex >= hpAtLevel.Length)
+        {
+            return;
+        }
+        hpIndex++;
+        maxHP = hpAtLevel[hpIndex];
+        UI_Manager.instance.HandlePlayerHealthUI(curHP, maxHP);
     }
 
     public int GetDefensePower()
@@ -68,20 +81,24 @@ public class FighterComponent : EntityComponent
 
         if (OnHPChanged != null)
         {
-            OnHPChanged(curHP, startHP);
+            OnHPChanged(curHP, maxHP);
         }
         if (curHP <= 0)
         {
-            if (thisEntity.isPlayer == true)
+            if (byPoison == true)
             {
-                MessageLog_Manager.NewMessage("The POISON CONSUMES YOU!", Color.red);
+                if (thisEntity.isPlayer == true)
+                {
+                    MessageLog_Manager.NewMessage("The POISON CONSUMES YOU!", Color.red);
 
-            }
-            else
-            {
-                MessageLog_Manager.NewMessage("The POISON CONSUMES " + thisEntity.Name, Color.red);
+                }
+                else
+                {
+                    MessageLog_Manager.NewMessage("The POISON CONSUMES " + thisEntity.Name, Color.red);
 
+                }
             }
+            
             Global.EntityDeath death = new Global.EntityDeath();
             death.deadEntity = thisEntity;
             death.FireEvent();

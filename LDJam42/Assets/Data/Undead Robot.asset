@@ -25,12 +25,14 @@ MonoBehaviour:
   - className: FighterComponent
     compParams:
     - fieldType: 1
-      value: 6
+      value: 23
     - fieldType: 1
-      value: 3
+      value: 8
     - fieldType: 2
-      value: 3
+      value: 70
   - className: EnemyComponent
-    compParams: []
+    compParams:
+    - fieldType: 1
+      value: 5
   Name: Undead Robot
   entityType: 0

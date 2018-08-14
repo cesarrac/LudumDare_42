@@ -277,13 +277,14 @@ public class MapManager  {
             if (curTile.tileType == TileType.Floor &&
                     curTile.entities.Count <= 0)
             {
-                positions[posIndex] = curTile.WorldPosition;
-                posIndex++;
                 if (posIndex >= positions.Length - 1)
                 {
                     allPositionsAcquired = true;
                     break;
                 }
+                positions[posIndex] = curTile.WorldPosition;
+                posIndex++;
+                
                 // get new tile
                 curTile = Map.GetTile(GetRandomMapPos());
             }
@@ -301,6 +302,6 @@ public class MapManager  {
 
     Vector2 GetRandomMapPos()
     {
-        return new Vector2(UnityEngine.Random.Range(0, Map.mapWidth - 1), UnityEngine.Random.Range(0, Map.mapWidth - 1));
+        return new Vector2(UnityEngine.Random.Range(0, Map.mapWidth), UnityEngine.Random.Range(0, Map.mapHeight));
     }
 }

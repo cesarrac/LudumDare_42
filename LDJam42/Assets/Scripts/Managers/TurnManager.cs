@@ -69,7 +69,7 @@ public class TurnManager {
         if (curState + 1 >= System.Enum.GetValues(typeof(TurnState)).Length)
         {
             turnState = (TurnState)1;
-            //MessageLog_Manager.NewMessage("New turn... ", Color.green);
+            Debug.Log("Starting turn: " + turnState);
             OnTurnChange.newTurnState = turnState;
             OnTurnChange.FireEvent();
             return;
@@ -77,7 +77,7 @@ public class TurnManager {
         turnState = (TurnState)curState + 1;
         
         
-        //Debug.Log("Starting turn: " + turnState);
+        Debug.Log("Starting turn: " + turnState);
         OnTurnChange.newTurnState = turnState;
         OnTurnChange.FireEvent();
     }
@@ -96,6 +96,7 @@ public class TurnManager {
 public enum TurnState
 {
     NULL,
+   // Poisoned,
     Player,
     Enemies,
     Darkness

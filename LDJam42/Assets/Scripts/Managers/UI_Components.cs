@@ -36,7 +36,7 @@ public class BarUI : UI_Component
 {
     Slider healthBar;
     TMP_Text valueLabel;
-
+    TMP_Text valueXP, valueLevel;
     public BarUI(string componentName) : base(componentName)
     {
     }
@@ -61,11 +61,18 @@ public class BarUI : UI_Component
         }
         healthBar = mainGO.GetComponent<Slider>();
         valueLabel = mainGO.transform.GetChild(2).gameObject.GetComponent<TMP_Text>();
+        valueLevel = mainGO.transform.GetChild(3).gameObject.GetComponent<TMP_Text>();
+        valueXP = mainGO.transform.GetChild(4).gameObject.GetComponent<TMP_Text>();
     }
     public void UpdateBar(float curValue, float maxValue)
     {
         healthBar.value = Mathf.Clamp01(curValue / maxValue);
         valueLabel.text = curValue.ToString("f0") + " / " + maxValue.ToString("f0");
+    }
+    public void UpdateXPValues(int totalXP, int level)
+    {
+        valueLevel.text = level.ToString();
+        valueXP.text = totalXP.ToString();
     }
 }
 

@@ -17,6 +17,8 @@ public class Game_Manager : MonoBehaviour {
     int difficultyLevel = 0;
     bool playerDead = false;
 
+
+
     private void Awake()
     {
         SetLevelPrototypes();
@@ -27,29 +29,41 @@ public class Game_Manager : MonoBehaviour {
         levelPrototypes = new LevelPrototype[]
         {
             new LevelPrototype("Start", -1, 5, new LevelEnemies[]{}),
+            new LevelPrototype("Easy0",1, 0, new LevelEnemies[]{
+                                     new LevelEnemies("Floater", 1)}),
+            new LevelPrototype("Easy00",1, 0, new LevelEnemies[]{
+                                     new LevelEnemies("Floater", 2)}),
+            new LevelPrototype("Easy001",1, 0, new LevelEnemies[]{
+                                     new LevelEnemies("Floater",3)}),
             new LevelPrototype("Easy1",1, 0, new LevelEnemies[]{
-                                     new LevelEnemies("Feral Frog", 3)}),
-            new LevelPrototype("Easy2",1, 0, new LevelEnemies[]{
-                                     new LevelEnemies("Feral Frog", 2),
-                                     new LevelEnemies("Dark Spider", 1)}),
-            new LevelPrototype("Mid1",2, 2, new LevelEnemies[]{
+                                     new LevelEnemies("Floater", 4)}),
+            new LevelPrototype("Easy2",3, 0, new LevelEnemies[]{
+                                     new LevelEnemies("Feral Frog", 1)}),
+            new LevelPrototype("Mid1",4, 2, new LevelEnemies[]{
+                                     new LevelEnemies("Feral Frog", 1),
+                                     new LevelEnemies("Floater", 2)}),
+             new LevelPrototype("Mid2",4, 3, new LevelEnemies[]{
+                                     new LevelEnemies("Undead Robot", 2)}),
+              new LevelPrototype("Mid3",5, 0, new LevelEnemies[]{
                                      new LevelEnemies("Undead Robot", 1),
-                                     new LevelEnemies("Floater", 3)}),
-             new LevelPrototype("Mid2",2, 0, new LevelEnemies[]{
+                                     new LevelEnemies("Floater", 1),
+                                     new LevelEnemies("Feral Frog", 1)}),
+              new LevelPrototype("High",6, 4, new LevelEnemies[]{
+                                     new LevelEnemies("Dark Spider", 3)}),
+              new LevelPrototype("High2",7, 3, new LevelEnemies[]{
                                      new LevelEnemies("Dark Spider", 1),
-                                     new LevelEnemies("Floater", 3)}),
-              new LevelPrototype("Mid3",3, 0, new LevelEnemies[]{
+                                     new LevelEnemies("Floater", 2),
+                                     new LevelEnemies("Feral Frog", 1)}),
+               new LevelPrototype("High2",8, 0, new LevelEnemies[]{
+                                     new LevelEnemies("Floater", 1),
+                                     new LevelEnemies("Feral Frog", 4)}),
+                new LevelPrototype("High2",9, 5, new LevelEnemies[]{
                                      new LevelEnemies("Dark Spider", 2),
                                      new LevelEnemies("Floater", 1),
-                                     new LevelEnemies("Feral Frog", 1)}),
-              new LevelPrototype("High",4, 2, new LevelEnemies[]{
-                                     new LevelEnemies("Undead Robot", 2),
-                                     new LevelEnemies("Dark Spider", 1),
-                                     new LevelEnemies("Feral Frog", 1)}),
-              new LevelPrototype("High2",5, 3, new LevelEnemies[]{
+                                     new LevelEnemies("Undead Robot", 1)}),
+                 new LevelPrototype("High2",10, 0, new LevelEnemies[]{
                                      new LevelEnemies("Dark Spider", 4),
-                                     new LevelEnemies("Floater", 1),
-                                     new LevelEnemies("Feral Frog", 1)}),
+                                     new LevelEnemies("Floater", 2)})
         };
     }
     public void RestartGame()
@@ -69,7 +83,7 @@ public class Game_Manager : MonoBehaviour {
     }
     private void Start()
     {
-        itemNames = new string[] { "Iron Sword","Food", "Golden Helm", "Iron Helm", "Iron Spear", "Red Sword", "Red Spear", "Guards Helm", "Poison Helm"};
+        itemNames = new string[] { "Guards Helm", "Iron Sword","Food",  "Iron Helm", "Iron Spear", "Red Sword", "Red Spear",  "Ruby Helm", "Golden Helm"};
         StartGame();
     }
     void StartGame ()
@@ -96,6 +110,9 @@ public class Game_Manager : MonoBehaviour {
         EntityManager.instance.StopPlayer();
         EntityManager.instance.ClearEnemies();
         EntityManager.instance.ClearItems();
+        MessageLog_Manager.NewMessage("**************************************", Color.white);
+        MessageLog_Manager.NewMessage("**************************************", Color.white);
+        MessageLog_Manager.NewMessage("**************************************", Color.white);
         MapManager.instance.ClearTiles(restartingGame);
     }
     void OnMapCleared(OnMapCleared data)
@@ -117,10 +134,11 @@ public class Game_Manager : MonoBehaviour {
         {
             difficultyLevel++;
         }
-        else if (UnityEngine.Random.Range(1, 5) == 1)
+        else if (Level % 8 == 0)     // UnityEngine.Random.Range(1, 20) == 1
         {
             difficultyLevel++;
-            if (difficultyLevel >= 5)
+            MessageLog_Manager.NewMessage("Monsters become stronger...", Color.red);
+            if (difficultyLevel > 10)
             {
                 // Game win
                 Debug.Log("You won the game!");
@@ -140,7 +158,6 @@ public class Game_Manager : MonoBehaviour {
                     levelPrototypes[i].difficultyLevel <= difficultyLevel)
                 {
                     potentialLevels.Add(levelPrototypes[i]);
-                    break;
                 }
             }
             curLevelPrototype = potentialLevels[UnityEngine.Random.Range(0, potentialLevels.Count)];
@@ -187,12 +204,21 @@ public class Game_Manager : MonoBehaviour {
             EntityManager.instance.SpawnEnemies(curLevelPrototype.levelEnemies[i].enemyPrototypeName, enemyPositions);
         }
 
-        int itemCount = UnityEngine.Random.Range(1, 4);
+        int itemCount = UnityEngine.Random.Range(0, 4);
         
         Vector2[] itemPositions = MapManager.instance.GetCleanPositions(itemCount);
         for (int i = 0; i < itemPositions.Length; i++)
         {
-            EntityManager.instance.SpawnItem(itemNames[UnityEngine.Random.Range(0, itemNames.Length)], itemPositions[i]);
+            int maxItemIndex = 2;
+            if (difficultyLevel >= 2)
+            {
+                maxItemIndex = 4;
+            }
+            if (difficultyLevel >= 5)
+            {
+                maxItemIndex = itemNames.Length - 1;
+            }
+            EntityManager.instance.SpawnItem(itemNames[UnityEngine.Random.Range(0, maxItemIndex + 1)], itemPositions[i]);
         }
         
     }

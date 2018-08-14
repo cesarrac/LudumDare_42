@@ -25,7 +25,7 @@ MonoBehaviour:
   - className: WeaponComponent
     compParams:
     - fieldType: 1
-      value: 5
+      value: 18
     - fieldType: 1
       value: 0
   Name: Red Sword

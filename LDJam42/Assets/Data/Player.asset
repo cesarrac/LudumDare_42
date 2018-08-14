@@ -25,16 +25,18 @@ MonoBehaviour:
   - className: FighterComponent
     compParams:
     - fieldType: 1
-      value: 2
+      value: 1
     - fieldType: 1
       value: 0
     - fieldType: 2
-      value: 25
+      value: 60
   - className: AbilityComponent
     compParams: []
   - className: InventoryComponent
     compParams: []
   - className: EquipmentComponent
+    compParams: []
+  - className: XPComponent
     compParams: []
   Name: Player
   entityType: 0

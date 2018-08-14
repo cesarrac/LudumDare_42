@@ -33,6 +33,7 @@ public enum ComponentID
     Equipment,
     Weapon,
     Armor,
-    Consumable
+    Consumable,
+    XP
 }
 

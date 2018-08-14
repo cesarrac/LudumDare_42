@@ -25,12 +25,14 @@ MonoBehaviour:
   - className: FighterComponent
     compParams:
     - fieldType: 1
-      value: 2
+      value: 20
     - fieldType: 1
       value: 0
     - fieldType: 2
-      value: 1
+      value: 60
   - className: EnemyComponent
-    compParams: []
+    compParams:
+    - fieldType: 1
+      value: 4
   Name: Feral Frog
   entityType: 0

@@ -25,6 +25,6 @@ MonoBehaviour:
   - className: HealthDropComponent
     compParams:
     - fieldType: 1
-      value: 5
+      value: 10
   Name: Food
   entityType: 1

@@ -171,6 +171,11 @@ public class PlayerInputSystem : MonoBehaviour
                         info[1] = new Message(armor.armorAttackStats.AttackPower.ToString(), Color.red);
                         info[2] = new Message(armor.armorAttackStats.DefensePower.ToString(), Color.cyan);
                     }
+                    else
+                    {
+                        HealthDropComponent consumable = (HealthDropComponent)tile.entities[0].GetEntityComponent(ComponentID.Consumable);
+                        info[1] = new Message(consumable.healthGained.ToString(), Color.cyan);
+                    }
                 }
                 infoUI.Activate();
                 infoUI.UpdateTexts(info);

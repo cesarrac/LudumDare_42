@@ -27,6 +27,6 @@ MonoBehaviour:
     - fieldType: 1
       value: 0
     - fieldType: 1
-      value: 1
+      value: 3
   Name: Iron Helm
   entityType: 1

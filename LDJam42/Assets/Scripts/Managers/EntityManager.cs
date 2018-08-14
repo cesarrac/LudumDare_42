@@ -35,12 +35,12 @@ public class EntityManager : MonoBehaviour
             return;
         Player.ChangeActiveStatus(false);
     }
-    public void ClearPlayer()
-    {
-        PositionComponent posC = (PositionComponent)Player.GetEntityComponent(ComponentID.Position);
-        PlayerInputSystem.instance.UnRegisterOnMoveInputCB(posC.Move);
-        Player = null;
-    }
+    //public void ClearPlayer()
+    //{
+    //    PositionComponent posC = (PositionComponent)Player.GetEntityComponent(ComponentID.Position);
+    //    PlayerInputSystem.instance.UnRegisterOnMoveInputCB(posC.Move);
+    //    Player = null;
+    //}
     public void ClearItems()
     {
         List<Entity> itemsToRemove = new List<Entity>();
@@ -89,6 +89,7 @@ public class EntityManager : MonoBehaviour
             playerDeath.points = 100; // TODO get this from total artifacts collected
             playerDeath.playerEntity = data.deadEntity;
             playerDeath.FireEvent();
+            Player.ChangeActiveStatus(false);
             PoolEntity(data.deadEntity);
             return;
         }
@@ -199,6 +200,7 @@ public class EntityManager : MonoBehaviour
             posComp.moveData = new MoveData(position.x, position.y);
             EntityGOMap[Player].transform.position = position;
             EntityActionManager.instance.EntityOnTileChanged(Player, posComp.moveData);
+            Player.ChangeActiveStatus(true);
             return;
         }
 
@@ -212,30 +214,30 @@ public class EntityManager : MonoBehaviour
             return;
         }
 
-        Entity newEntity = new Entity(proto.Name, proto.entityType, components, isPlayer: true);
+        Player = new Entity(proto.Name, proto.entityType, components, isPlayer: true);
 
-        PositionComponent posC = (PositionComponent)newEntity.GetEntityComponent(ComponentID.Position);
+        PositionComponent posC = (PositionComponent)Player.GetEntityComponent(ComponentID.Position);
         posC.moveData = new MoveData(position.x, position.y);
-        
-        newEntity.InitComponent(entityGO);
-        
-        AbilityComponent abilityComponent = (AbilityComponent)newEntity.GetEntityComponent(ComponentID.Abilities);
-        abilityComponent.AddAbility(AbilityID.Blood_For_Light, true, "The Darkness is pushed back by the sting of your blood!");
 
-        InventoryComponent inventoryComponent = (InventoryComponent)newEntity.GetEntityComponent(ComponentID.Inventory);
-        PlayerInputSystem.instance.AddDynamicKeys(() => inventoryComponent.Drop(0), "t");
+        Player.InitComponent(entityGO);
+        
+        AbilityComponent abilityComponent = (AbilityComponent)Player.GetEntityComponent(ComponentID.Abilities);
+        abilityComponent.AddAbility(AbilityID.Blood_For_Light, true, "25% HP");
+
+        //InventoryComponent inventoryComponent = (InventoryComponent)Player.GetEntityComponent(ComponentID.Inventory);
+        //PlayerInputSystem.instance.AddDynamicKeys(() => inventoryComponent.Drop(0), "t");
+
+        Player.ChangeActiveStatus(true);
     
 
-        EntityGOMap.Add(newEntity, entityGO);
+        EntityGOMap.Add(Player, entityGO);
 
-        newEntity.CanEndTurnCB = CanPlayerEndTurn;
+        Player.CanEndTurnCB = CanPlayerEndTurn;
 
         // Register input callbacks
-        PlayerInputSystem.instance.RegisterOnMoveInputCB(posC.Move);
+        PlayerInputSystem.instance.RegisterOnMoveInputCB((data) => posC.Move(data));
 
         GetPlayerPositionData += posC.GetPositionData;
-
-        Player = newEntity;
 
     }
     public bool CanPlayerEndTurn()
