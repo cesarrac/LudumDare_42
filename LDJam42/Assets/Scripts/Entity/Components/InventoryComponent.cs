@@ -36,7 +36,7 @@ public class InventoryComponent : EntityComponent
         {
             FighterComponent fighterComponent = (FighterComponent)thisEntity.GetEntityComponent(ComponentID.Fighter);
             HealthDropComponent consumable = (HealthDropComponent)item.thisEntity.GetEntityComponent(ComponentID.Consumable);
-            fighterComponent.GainHealth(consumable.HealthGained());
+            fighterComponent.GainHealth(consumable.HealthGained);
             MessageLog_Manager.NewMessage("You consume " + item.itemName, Color.green);
             return true;
         }

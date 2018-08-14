@@ -174,7 +174,7 @@ public class PlayerInputSystem : MonoBehaviour
                     else
                     {
                         HealthDropComponent consumable = (HealthDropComponent)tile.entities[0].GetEntityComponent(ComponentID.Consumable);
-                        info[1] = new Message(consumable.healthGained.ToString(), Color.cyan);
+                        info[1] = new Message(consumable.HealthGained.ToString(), Color.cyan);
                     }
                 }
                 infoUI.Activate();

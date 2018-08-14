@@ -117,7 +117,7 @@ public class EntityActionManager : MonoBehaviour
         if (nextTile.entities.Count > 1)
         {
             // figure this out...
-            for (int i = 1; i < nextTile.entities.Count; i++)
+            for (int i = 0; i < nextTile.entities.Count; i++)
             {
                 if (nextTile.entities[i].entityType == EntityType.Unit)
                 {

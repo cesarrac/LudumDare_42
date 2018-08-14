@@ -199,8 +199,8 @@ public class EntityManager : MonoBehaviour
             PositionComponent posComp = (PositionComponent)Player.GetEntityComponent(ComponentID.Position);
             posComp.moveData = new MoveData(position.x, position.y);
             EntityGOMap[Player].transform.position = position;
-            EntityActionManager.instance.EntityOnTileChanged(Player, posComp.moveData);
             Player.ChangeActiveStatus(true);
+            EntityActionManager.instance.EntityOnTileChanged(Player, posComp.moveData);
             return;
         }
 

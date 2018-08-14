@@ -17,7 +17,7 @@ public class Game_Manager : MonoBehaviour {
     int difficultyLevel = 0;
     bool playerDead = false;
 
-
+    MapManager mapManager;
 
     private void Awake()
     {
@@ -95,7 +95,7 @@ public class Game_Manager : MonoBehaviour {
 
         new TurnManager();
         //TurnManager.instance.Init();
-        new MapManager();
+        mapManager = new MapManager();
         
         EntityActionManager.instance.Init();
 
@@ -170,7 +170,7 @@ public class Game_Manager : MonoBehaviour {
         }
         Debug.Log("New Map: diff=" + difficultyLevel + " curlvlProto name=" + curLevelPrototype.Name);
 
-        MapManager.instance.NewMap(Vector2.zero, Level, curLevelPrototype.darknessLevel);
+        mapManager.NewMap(Vector2.zero, Level, curLevelPrototype.darknessLevel);
 
         
     }
@@ -199,25 +199,27 @@ public class Game_Manager : MonoBehaviour {
         {
             // get a position for enemy needed
             Vector2[] enemyPositions = null;
-            enemyPositions = MapManager.instance.GetCleanPositions(curLevelPrototype.levelEnemies[i].count);
+            enemyPositions = mapManager.GetCleanPositions(curLevelPrototype.levelEnemies[i].count);
             Debug.Log(enemyPositions.Length + " returned positions");
             EntityManager.instance.SpawnEnemies(curLevelPrototype.levelEnemies[i].enemyPrototypeName, enemyPositions);
         }
 
         int itemCount = UnityEngine.Random.Range(0, 4);
-        
-        Vector2[] itemPositions = MapManager.instance.GetCleanPositions(itemCount);
+        if (itemCount == 0)
+            return;
+        Vector2[] itemPositions = mapManager.GetCleanPositions(itemCount);
+        int maxItemIndex = 2;
+        if (difficultyLevel >= 2)
+        {
+            maxItemIndex = 4;
+        }
+        if (difficultyLevel >= 5)
+        {
+            maxItemIndex = itemNames.Length - 1;
+        }
         for (int i = 0; i < itemPositions.Length; i++)
         {
-            int maxItemIndex = 2;
-            if (difficultyLevel >= 2)
-            {
-                maxItemIndex = 4;
-            }
-            if (difficultyLevel >= 5)
-            {
-                maxItemIndex = itemNames.Length - 1;
-            }
+           
             EntityManager.instance.SpawnItem(itemNames[UnityEngine.Random.Range(0, maxItemIndex + 1)], itemPositions[i]);
         }
         
@@ -231,9 +233,5 @@ public class Game_Manager : MonoBehaviour {
 
         TurnManager.instance.Restart();
     }
-
-    // Update is called once per frame
-    void Update () {
-		
-	}
+    
 }

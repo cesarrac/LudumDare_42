@@ -4,19 +4,15 @@ using UnityEngine;
 
 public class HealthDropComponent : EntityComponent
 {
-    public int healthGained;
+    public int HealthGained { get; protected set; }
     public HealthDropComponent(int healthGain) : base(ComponentID.Consumable)
     {
-        healthGained = healthGain;
+        HealthGained = Random.Range(healthGain, healthGain + 10);
     }
 
     public override void Init(Entity entity, GameObject entityGO)
     {
         
-    }
-    public int HealthGained()
-    {
-        return Random.Range(healthGained, healthGained + 10);
     }
     public override void RegisterCBListener<T>(T listener)
     {

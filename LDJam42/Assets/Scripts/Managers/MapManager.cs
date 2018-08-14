@@ -263,7 +263,7 @@ public class MapManager  {
     {
         Vector2[] positions = new Vector2[totalNeeded];
         int posIndex = 0;
-        int maxIterations = 1000, iterations = 0;
+        int maxIterations = 100000, iterations = 0;
         bool allPositionsAcquired = false;
         Vector2 startPos = GetRandomMapPos();
         MapTile curTile = Map.GetTile(startPos);
