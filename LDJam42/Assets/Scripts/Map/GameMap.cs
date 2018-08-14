@@ -12,7 +12,8 @@ public enum TileType
     Wall,
     Darkness,
     Exit,
-    SemiDark
+    SemiDark,
+    Entrance
 }
 
 public class GameMap 
@@ -32,6 +33,10 @@ public class GameMap
         worldOriginPoint = worldOrigin;
         OnTileChange = OnTileChangeCB;
         InitTiles();
+    }
+    public void UnRegisterCB()
+    {
+        OnTileChange = null;
     }
     public void ResetMap()
     {
@@ -58,6 +63,17 @@ public class GameMap
             OnTileChange(type, GridIndex(x, y));
         }
        // Debug.Log("tile type set to " + type);
+    }
+    public void SetTileType(int index, TileType type)
+    {
+        if (index < 0 || index > Tiles.Length)
+            return;
+        Tiles[index].tileType = type;
+        if (OnTileChange != null)
+        {
+            OnTileChange(type, index);
+        }
+        // Debug.Log("tile type set to " + type);
     }
 
     public MapTile GetTile(Vector2 worldPos)
@@ -267,7 +283,7 @@ public class MapTile
     public void UnRegisterEntity(Entity entity)
     {
         entities.Remove(entity);
-        Debug.Log("Entity " + entity.Name + " UNregistered to tile");
+        //Debug.Log("Entity " + entity.Name + " UNregistered to tile");
     }
 }
 

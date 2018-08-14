@@ -25,7 +25,7 @@ MonoBehaviour:
   - className: FighterComponent
     compParams:
     - fieldType: 1
-      value: 1
+      value: 2
     - fieldType: 1
       value: 0
     - fieldType: 2

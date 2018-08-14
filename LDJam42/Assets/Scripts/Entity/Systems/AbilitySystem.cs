@@ -12,18 +12,23 @@ public class AbilitySystem : MonoBehaviour
     MoveData inputDirection;
 
     List<AbilityCaster> casters;
-
+    public GameObject abilityInputWarning;
 
     private void Awake()
     {
         instance = this;
         casters = new List<AbilityCaster>();
+        abilityInputWarning.SetActive(false);
     }
     public void CallAbility(Ability ability, Entity caster)
     {
         if (ability.NeedsInput == false)
         {
             CastAbility(caster, ability.ID, ability.Description);
+        }
+        else
+        {
+            abilityInputWarning.SetActive(true);
         }
         casters.Add(new AbilityCaster(caster, ability.ID, ability.NeedsInput, ability.Description));
     }
@@ -50,6 +55,7 @@ public class AbilitySystem : MonoBehaviour
             {
                 CastAbility(entity, casters[i].abID, casters[i].abilityDesc);
                 casters.RemoveAt(i);
+                abilityInputWarning.SetActive(false);
                 return true;
             }
         }

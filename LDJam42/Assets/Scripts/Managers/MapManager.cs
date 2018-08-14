@@ -46,7 +46,7 @@ public class MapManager  {
         Global.OnTurnChange.RegisterListener(SpreadDarkness);
     }
 
-    public void ClearTiles()
+    public void ClearTiles(bool restartingGame)
     {
         for (int i = 0; i < TileGOs.Length; i++)
         {
@@ -55,11 +55,16 @@ public class MapManager  {
             pool.PoolObject(TileGOs[i].mainGO);
 
         }
+        if (restartingGame == true)
+        {
+            Map.UnRegisterCB();
+            //Map = null;
+        }
         Global.OnMapCleared mapCleared = new OnMapCleared();
         mapCleared.FireEvent();
     }
     
-    public void NewMap(Vector2 mapWorldOrigin, int darknessLevel = 0, int mapWidth = 9, int mapHeight = 9)
+    public void NewMap(Vector2 mapWorldOrigin, int level, int darknessLevel = 0, int mapWidth = 9, int mapHeight = 9)
     {
         cameraShaker = CameraShaker.instance;
         this.darknessLevel = darknessLevel;
@@ -90,6 +95,7 @@ public class MapManager  {
         TileGOs = new TileGOData[Map.Tiles.Length];
 
         Vector2Int exitTilePos = Vector2Int.zero;
+        Vector2Int entrancePos = Vector2Int.zero;
             
         for (int i = 0; i < Map.Tiles.Length; i++)
         {
@@ -112,6 +118,8 @@ public class MapManager  {
             RenderSystem.instance.Render(Map.Tiles[i].tileType.ToString(), tileGOData.renderer);
 
             darknessMap[i] = new Darkness(Map.Tiles[i].GridPosition.x, Map.Tiles[i].GridPosition.y, 0);
+            
+
             // Set exit
             if (exitTilePos == Vector2Int.zero)
             {
@@ -119,9 +127,18 @@ public class MapManager  {
                 {
                     exitTilePos = Map.Tiles[i].GridPosition;
                 }
+                // Set entrance for levels after level 0
+                else if (level > 0 && entrancePos == Vector2Int.zero)
+                {
+                    if (UnityEngine.Random.Range(1, 12) == 1)
+                    {
+                        entrancePos = Map.Tiles[i].GridPosition;
+                    }
+                }
             }
 
             TileGOs[i] = tileGOData;
+            
         }
         // Clean up array
         TileGOs = TileGOs.Where(go => go.mainGO != null).ToArray();
@@ -132,9 +149,18 @@ public class MapManager  {
             exitTilePos = new Vector2Int(mapWidth/2, mapHeight/2);
         }
         Map.SetTileType(exitTilePos.x, exitTilePos.y, TileType.Exit);
+        if (level > 0)
+            Map.SetTileType(entrancePos.x, entrancePos.y, TileType.Entrance);
+
+        // chance to start with darnkess 
+        if (darknessLevel > 0)
+        {
+            SetDarkness();
+        }
+
 
         Global.OnMapCreated onMapCreated = new OnMapCreated();
-        onMapCreated.entranceWorldPosition = Vector2.right;
+        onMapCreated.entranceWorldPosition = entrancePos;
         onMapCreated.exitWorldPosition = exitTilePos;
         onMapCreated.FireEvent();
 
@@ -162,6 +188,13 @@ public class MapManager  {
         if (data.newTurnState != TurnState.Darkness)
             return;
 
+        SetDarkness();
+
+        TurnManager.instance.FinishTurn();
+    }
+
+    void SetDarkness()
+    {
         int mapwidth = Map.mapWidth;
         int mapHeight = Map.mapHeight;
 
@@ -182,7 +215,8 @@ public class MapManager  {
                     int randomChance = UnityEngine.Random.Range(0, 10);
                     if (randomChance == 1)
                     {
-                        if (Map.Tiles[x + y * mapWidth].tileType == TileType.Exit)
+                        if (Map.Tiles[x + y * mapWidth].tileType == TileType.Exit ||
+                            Map.Tiles[x + y * mapWidth].tileType == TileType.Entrance)
                             continue;
                         // Increase darkness
                         darknessMap[x + y * mapWidth].darkValue += 0.5f;
@@ -194,7 +228,7 @@ public class MapManager  {
                             if (causedCamShake == false)
                             {
                                 causedCamShake = true;
-                               // cameraShaker.AddTrauma(8, 2);
+                                // cameraShaker.AddTrauma(8, 2);
                             }
                         }
                         else
@@ -207,8 +241,6 @@ public class MapManager  {
             }
         }
         darknessLevel++;
-
-        TurnManager.instance.FinishTurn();
     }
 
     public bool ClearDarkTile(Vector2 worlPos)
@@ -225,5 +257,50 @@ public class MapManager  {
             return true;
         }
         return false;
+    }
+
+    public Vector2[] GetCleanPositions(int totalNeeded)
+    {
+        Vector2[] positions = new Vector2[totalNeeded];
+        int posIndex = 0;
+        int maxIterations = 1000, iterations = 0;
+        bool allPositionsAcquired = false;
+        Vector2 startPos = GetRandomMapPos();
+        MapTile curTile = Map.GetTile(startPos);
+        if (curTile == null)
+        {
+            return null;
+        }
+        while(iterations < maxIterations || allPositionsAcquired == false)
+        {
+            // Set the position to cur tile world position
+            if (curTile.tileType == TileType.Floor &&
+                    curTile.entities.Count <= 0)
+            {
+                positions[posIndex] = curTile.WorldPosition;
+                posIndex++;
+                if (posIndex >= positions.Length - 1)
+                {
+                    allPositionsAcquired = true;
+                    break;
+                }
+                // get new tile
+                curTile = Map.GetTile(GetRandomMapPos());
+            }
+            else
+            {
+                // get new tile
+                curTile = Map.GetTile(GetRandomMapPos());
+            }
+            iterations++;
+            
+        }
+        Debug.Log("positions " + positions.Length + " found ");
+        return positions.Distinct().ToArray();
+    }
+
+    Vector2 GetRandomMapPos()
+    {
+        return new Vector2(UnityEngine.Random.Range(0, Map.mapWidth - 1), UnityEngine.Random.Range(0, Map.mapWidth - 1));
     }
 }

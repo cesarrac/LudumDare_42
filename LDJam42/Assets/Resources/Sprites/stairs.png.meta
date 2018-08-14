@@ -3,7 +3,7 @@ guid: 47662fcb7d1e8364b903ab4e530cabd5
 TextureImporter:
   fileIDToRecycleName:
     21300000: Exit
-    21300002: stairs_1
+    21300002: Entrance
   externalObjects: {}
   serializedVersion: 7
   mipmaps:
@@ -106,7 +106,7 @@ TextureImporter:
       edges: []
       weights: []
     - serializedVersion: 2
-      name: stairs_1
+      name: Entrance
       rect:
         serializedVersion: 2
         x: 16

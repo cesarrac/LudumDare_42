@@ -72,17 +72,10 @@ public class EntityActionManager : MonoBehaviour
         // DARKNESS DAMAGE
         if (curTile.tileType == TileType.Darkness)
         {
-            if (entity.isPlayer == true)
-            {
-                MessageLog_Manager.NewMessage("The POISON CONSUMES YOU!", Color.red);
-
-            }
-            else
-            {
-                MessageLog_Manager.NewMessage("The POISON CONSUMES " + entity.Name, Color.red);
-            }
+            
+            
             FighterComponent attacker = (FighterComponent)entity.GetEntityComponent(ComponentID.Fighter);
-            attacker.ReceiveDamage(1000);
+            attacker.ReceiveDamage(1000, true);
             return false;
         }
 
@@ -120,28 +113,36 @@ public class EntityActionManager : MonoBehaviour
     /// <returns></returns>
     private bool InteractTileEntities(Entity interactor, MapTile nextTile)
     {
+        Entity activeTileEntity = nextTile.entities[0];
         if (nextTile.entities.Count > 1)
         {
             // figure this out...
-            Debug.LogError("tried to step into a tile that has more than one entity registered on it!");
-            return false;
+            for (int i = 1; i < nextTile.entities.Count; i++)
+            {
+                if (nextTile.entities[i].entityType == EntityType.Unit)
+                {
+                    activeTileEntity = nextTile.entities[i];
+                    break;
+                }
+            }
         }
-        if (nextTile.entities[0].entityType == EntityType.Unit)
+
+        if (activeTileEntity.entityType == EntityType.Unit)
         {
-            if (nextTile.entities[0].faction == interactor.faction)
+            if (activeTileEntity.faction == interactor.faction)
                 return false;
             FighterComponent attacker = (FighterComponent)interactor.GetEntityComponent(ComponentID.Fighter);
-            FighterComponent defender = (FighterComponent)nextTile.entities[0].GetEntityComponent(ComponentID.Fighter);
+            FighterComponent defender = (FighterComponent)activeTileEntity.GetEntityComponent(ComponentID.Fighter);
             return DoCombat(attacker, defender);
         }
-        else if (nextTile.entities[0].entityType == EntityType.Item)
+        else if (activeTileEntity.entityType == EntityType.Item)
         {
             Debug.Log("ON AN ITEM TILE!!");
             // do item pick up
             EntityComponent comp = interactor.GetEntityComponent(ComponentID.Inventory);
             if (comp == null)
                 return true;
-            ItemComponent item = (ItemComponent)nextTile.entities[0].GetEntityComponent(ComponentID.Item);
+            ItemComponent item = (ItemComponent)activeTileEntity.GetEntityComponent(ComponentID.Item);
             InventoryComponent inventory = (InventoryComponent)comp;
             if (inventory.AddItem(item) == true)
             {

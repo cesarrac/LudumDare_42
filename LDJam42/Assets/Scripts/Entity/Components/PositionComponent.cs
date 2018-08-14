@@ -32,6 +32,15 @@ public class PositionComponent : EntityComponent
         thisEntity = entity;
         actionManager = EntityActionManager.instance;
         actionManager.EntityOnTileChanged(thisEntity, moveData);
+        //thisEntity.OnActiveChanged += ClearCB;
+    }
+    void ClearCB(bool isActive)
+    {
+        if (isActive == true)
+            return;
+        OnInputNeeded = null;
+        OnInputProcessed = null;
+        CanMoveTo = null;
     }
 
     public void Move(MoveData direction)

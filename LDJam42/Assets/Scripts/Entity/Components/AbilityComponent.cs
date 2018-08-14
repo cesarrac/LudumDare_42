@@ -30,6 +30,7 @@ public class AbilityComponent : EntityComponent
 
             // add input
             playerInputSystem.AddDynamicKeys(() => abilitySystem.CallAbility(abilities[0], thisEntity), "1");
+            UI_Manager.instance.AddButtonAction(() => abilitySystem.CallAbility(abilities[0], thisEntity));
             return;
         }
         if (abilities.Length >= 10)

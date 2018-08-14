@@ -25,9 +25,9 @@ MonoBehaviour:
   - className: FighterComponent
     compParams:
     - fieldType: 1
-      value: 5
+      value: 6
     - fieldType: 1
-      value: 2
+      value: 3
     - fieldType: 2
       value: 3
   - className: EnemyComponent

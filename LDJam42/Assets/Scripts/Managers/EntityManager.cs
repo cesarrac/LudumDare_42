@@ -31,7 +31,15 @@ public class EntityManager : MonoBehaviour
     }
     public void StopPlayer()
     {
+        if (Player == null)
+            return;
         Player.ChangeActiveStatus(false);
+    }
+    public void ClearPlayer()
+    {
+        PositionComponent posC = (PositionComponent)Player.GetEntityComponent(ComponentID.Position);
+        PlayerInputSystem.instance.UnRegisterOnMoveInputCB(posC.Move);
+        Player = null;
     }
     public void ClearItems()
     {
@@ -56,6 +64,8 @@ public class EntityManager : MonoBehaviour
 
     public void ClearEnemies()
     {
+        if (Enemies == null)
+            return;
         for (int i = 0; i < Enemies.Length; i++)
         {
             PoolEntity(Enemies[i]);
@@ -82,7 +92,13 @@ public class EntityManager : MonoBehaviour
             PoolEntity(data.deadEntity);
             return;
         }
-
+        if (data.deadEntity.CanEndTurnCB != null)
+        {
+            if (data.deadEntity.CanEndTurnCB() == true)
+            {
+                TurnManager.instance.FinishTurn();
+            }
+        }
         DeactivateEnemy(data.deadEntity);
     }
 
@@ -189,7 +205,7 @@ public class EntityManager : MonoBehaviour
         EntityPrototype proto = GetProtoType("Player");//EntityProtoMap["Player"];
         EntityComponent[] components = ReadProtoComponents(proto.components);
 
-        GameObject entityGO = pool.GetObjectForType("Entity", true, position);
+        GameObject entityGO = pool.GetObjectForType("Player", true, position);
         if (entityGO == null)
         {
             // Make a new one?
@@ -208,6 +224,7 @@ public class EntityManager : MonoBehaviour
 
         InventoryComponent inventoryComponent = (InventoryComponent)newEntity.GetEntityComponent(ComponentID.Inventory);
         PlayerInputSystem.instance.AddDynamicKeys(() => inventoryComponent.Drop(0), "t");
+    
 
         EntityGOMap.Add(newEntity, entityGO);
 
@@ -235,12 +252,28 @@ public class EntityManager : MonoBehaviour
             Debug.LogError("EntityManager could not find a protoype called " + enemyPrototypeName + " and cannot spawn it!");
             return;
         }
-        
-        Enemies = new Entity[positions.Length];
-
-        for (int i = 0; i < Enemies.Length; i++)
+        int enemyIndex = 0;
+        if (Enemies == null || Enemies.Length <= 0)
         {
-            GameObject entityGO = pool.GetObjectForType("Entity", true, positions[i]);
+            Enemies = new Entity[positions.Length];
+            Debug.Log("Spawning " + Enemies.Length + " enemies");
+        }
+        else
+        {
+            // extend enemies
+            Entity[] origEnemies = Enemies;
+            Enemies = new Entity[origEnemies.Length + positions.Length];
+            for (int i = 0; i < origEnemies.Length; i++)
+            {
+                Enemies[i] = origEnemies[i];
+            }
+            enemyIndex = origEnemies.Length;
+        }
+
+        int posIndex = 0;
+        for (int i = enemyIndex; i < Enemies.Length; i++)
+        {
+            GameObject entityGO = pool.GetObjectForType("Entity", true, positions[posIndex]);
             if (entityGO == null)
             {
                 // Make a new one?
@@ -250,7 +283,7 @@ public class EntityManager : MonoBehaviour
             Entity newEntity = new Entity(proto.Name, proto.entityType, components);
 
             PositionComponent posC = (PositionComponent)newEntity.GetEntityComponent(ComponentID.Position);
-            posC.moveData = new MoveData(positions[i].x, positions[i].y);
+            posC.moveData = new MoveData(positions[posIndex].x, positions[posIndex].y);
 
             newEntity.InitComponent(entityGO);
 
@@ -259,6 +292,8 @@ public class EntityManager : MonoBehaviour
             // Register end turn CB for enemy
             newEntity.CanEndTurnCB = () => CanEnemyEndTurn(index);
             Enemies[i] = newEntity;
+
+            posIndex++;
         }
     }
   

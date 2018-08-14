@@ -3,6 +3,7 @@ using System.Collections;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
+using Global;
 
 public class UI_Manager : MonoBehaviour
 {
@@ -10,14 +11,44 @@ public class UI_Manager : MonoBehaviour
     public static UI_Manager instance { get; protected set; }
 
     BarUI barUI;
+    public GameObject deathPanel, winPanel;
+
+    public Button UseAbilityButton;
 
     private void Awake()
     {
         instance = this;
         SetComponents();
         Init();
+        Global.OnMapCreated.RegisterListener(OnMapStart);
+        Global.PlayerDeath.RegisterListener(OnPlayerDeath);
+        Global.GameWin.RegisterListener(OnGameWin);
     }
 
+    private void OnGameWin(GameWin data)
+    {
+        winPanel.SetActive(true);
+    }
+
+    private void OnMapStart(OnMapCreated data)
+    {
+        if (deathPanel == null)
+            deathPanel = GameObject.FindGameObjectWithTag("DeathPanel");
+
+        deathPanel.SetActive(false);
+        winPanel.SetActive(false);
+    }
+
+    public void AddButtonAction(Action action)
+    {
+        UseAbilityButton.onClick.RemoveAllListeners();
+        UseAbilityButton.onClick.AddListener(() => action());
+    }
+
+    private void OnPlayerDeath(PlayerDeath data)
+    {
+        deathPanel.SetActive(true);
+    }
 
     private void SetComponents()
     {

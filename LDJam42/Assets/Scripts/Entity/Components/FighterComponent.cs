@@ -41,9 +41,7 @@ public class FighterComponent : EntityComponent
     {
         if (equipment != null)
         {
-            int power = equipment.GetAttackPower();
-            if (power > 0)
-                return power;
+            return equipment.GetAttackPower() + attackData.AttackPower;
         }
         return attackData.AttackPower;
     }
@@ -58,13 +56,11 @@ public class FighterComponent : EntityComponent
     {
         if (equipment != null)
         {
-            int defnse = equipment.GetDefensePower();
-            if (defnse > 0)
-                return defnse;
+            return equipment.GetDefensePower() + attackData.DefensePower;
         }
         return attackData.DefensePower;
     }
-    public bool ReceiveDamage(float damage)
+    public bool ReceiveDamage(float damage, bool byPoison = false)
     {
         // todo add damage received call back to resist/mitigate any damage
         curHP -= damage;
@@ -76,6 +72,16 @@ public class FighterComponent : EntityComponent
         }
         if (curHP <= 0)
         {
+            if (thisEntity.isPlayer == true)
+            {
+                MessageLog_Manager.NewMessage("The POISON CONSUMES YOU!", Color.red);
+
+            }
+            else
+            {
+                MessageLog_Manager.NewMessage("The POISON CONSUMES " + thisEntity.Name, Color.red);
+
+            }
             Global.EntityDeath death = new Global.EntityDeath();
             death.deadEntity = thisEntity;
             death.FireEvent();

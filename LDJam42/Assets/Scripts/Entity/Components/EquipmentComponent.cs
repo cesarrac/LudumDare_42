@@ -6,6 +6,8 @@ public class EquipmentComponent : EntityComponent
 {
     public WeaponComponent weapon { get; protected set; }
     public ArmorComponent armor { get; protected set; }
+    SpriteRenderer armorRenderer;
+    SpriteRenderer wpnRenderer;
     PositionComponent thisPosition;
 
     public EquipmentComponent() : base(ComponentID.Equipment)
@@ -15,6 +17,8 @@ public class EquipmentComponent : EntityComponent
     public override void Init(Entity entity, GameObject entityGO)
     {
         thisPosition = (PositionComponent)entity.GetEntityComponent(ComponentID.Position);
+        armorRenderer = entityGO.transform.GetChild(2).gameObject.GetComponent<SpriteRenderer>();
+        wpnRenderer = entityGO.transform.GetChild(1).gameObject.GetComponent<SpriteRenderer>();
     }
 
     public bool AddEquipment(ItemComponent itemComponent)
@@ -30,6 +34,7 @@ public class EquipmentComponent : EntityComponent
             weapon = (WeaponComponent)wComp;
             Debug.Log("WEAPON added to equipment - " + itemComponent.itemName);
             MessageLog_Manager.NewMessage("You equip a " + itemComponent.itemName, Color.cyan);
+            RenderSystem.instance.Render(itemComponent.itemName, wpnRenderer);
             return true;
         }
         else if (itemComponent.itemType == ItemType.Armor)
@@ -42,6 +47,7 @@ public class EquipmentComponent : EntityComponent
             armor = (ArmorComponent)aComp;
             Debug.Log("ARMOR added to equipment - " + itemComponent.itemName);
             MessageLog_Manager.NewMessage("You equip a " + itemComponent.itemName, Color.cyan);
+            RenderSystem.instance.Render(itemComponent.itemName, armorRenderer);
             return true;
         }
         return false;

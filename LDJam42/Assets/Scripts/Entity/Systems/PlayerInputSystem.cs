@@ -31,6 +31,8 @@ public class PlayerInputSystem : MonoBehaviour
         canvas = GameObject.FindGameObjectWithTag("Canvas");
     }
 
+    
+
     private void OnMapStart(OnMapCreated data)
     {
         canFindTile = true;
@@ -121,6 +123,23 @@ public class PlayerInputSystem : MonoBehaviour
                 infoUI.DeActivate();
                 return;
             }
+            if (tile.tileType == TileType.Darkness)
+            {
+                infoUI.Activate();
+                
+                infoUI.UpdateTexts(new Message[] { new Message("Poison", Color.magenta), new Message("100%", Color.red), new Message("Lethal!", Color.red) });
+                infoUI.UpdatePosition(mousePos + Vector2.left * 2, canvas);
+                return;
+            }
+            if (tile.tileType == TileType.SemiDark)
+            {
+                infoUI.Activate();
+
+                infoUI.UpdateTexts(new Message[] { new Message("Poison", Color.magenta), new Message("50%", Color.yellow), new Message("Dangerous!", Color.yellow)});
+                infoUI.UpdatePosition(mousePos + Vector2.left * 2, canvas);
+                return;
+            }
+
             if (tile.entities.Count <= 0)
             {
                 infoUI.DeActivate();

@@ -15,7 +15,14 @@ public class RenderComponent : EntityComponent
     {
         if (entityGO == null)
             return;
-        renderer = entityGO.GetComponentInChildren<SpriteRenderer>();
+        if (entity.isPlayer)
+        {
+            renderer = entityGO.transform.GetChild(0).gameObject.GetComponent<SpriteRenderer>();
+        }
+        else
+        {
+            renderer = entityGO.GetComponentInChildren<SpriteRenderer>();
+        }
         if (entity.entityType == EntityType.Unit)
         {
             renderer.sortingLayerName = "Units";
