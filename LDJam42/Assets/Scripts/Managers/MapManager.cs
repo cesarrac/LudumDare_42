@@ -95,7 +95,7 @@ public class MapManager  {
         TileGOs = new TileGOData[Map.Tiles.Length];
 
         Vector2Int exitTilePos = Vector2Int.zero;
-        Vector2Int entrancePos = Vector2Int.zero;
+        Vector2Int entranceTilePos = Vector2Int.zero;
             
         for (int i = 0; i < Map.Tiles.Length; i++)
         {
@@ -128,11 +128,11 @@ public class MapManager  {
                     exitTilePos = Map.Tiles[i].GridPosition;
                 }
                 // Set entrance for levels after level 0
-                else if (level > 0 && entrancePos == Vector2Int.zero)
+                else if (level > 0 && entranceTilePos == Vector2Int.zero)
                 {
                     if (UnityEngine.Random.Range(1, 12) == 1)
                     {
-                        entrancePos = Map.Tiles[i].GridPosition;
+                        entranceTilePos = Map.Tiles[i].GridPosition;
                     }
                 }
             }
@@ -150,7 +150,7 @@ public class MapManager  {
         }
         Map.SetTileType(exitTilePos.x, exitTilePos.y, TileType.Exit);
         if (level > 0)
-            Map.SetTileType(entrancePos.x, entrancePos.y, TileType.Entrance);
+            Map.SetTileType(entranceTilePos.x, entranceTilePos.y, TileType.Entrance);
 
         // chance to start with darnkess 
         if (darknessLevel > 0)
@@ -160,7 +160,7 @@ public class MapManager  {
 
 
         Global.OnMapCreated onMapCreated = new OnMapCreated();
-        onMapCreated.entranceWorldPosition = entrancePos;
+        onMapCreated.entranceWorldPosition = entranceTilePos;
         onMapCreated.exitWorldPosition = exitTilePos;
         onMapCreated.FireEvent();
 
@@ -267,17 +267,17 @@ public class MapManager  {
         bool allPositionsAcquired = false;
         Vector2 startPos = GetRandomMapPos();
         MapTile curTile = Map.GetTile(startPos);
-        if (curTile == null)
-        {
-            return null;
-        }
+        //if (curTile == null)
+        //{
+        //    return null;
+        //}
         while(iterations < maxIterations || allPositionsAcquired == false)
         {
             // Set the position to cur tile world position
             if (curTile.tileType == TileType.Floor &&
                     curTile.entities.Count <= 0)
             {
-                if (posIndex >= positions.Length - 1)
+                if (posIndex >= positions.Length)
                 {
                     allPositionsAcquired = true;
                     break;
